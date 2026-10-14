@@ -140,7 +140,9 @@ pnpm format:check && pnpm build && pnpm check && pnpm test
 ```
 
 `build` comes before `check`, as in training-tools. CI runs exactly these on
-every pull request (`.github/workflows/ci.yml`).
+every pull request (`.github/workflows/ci.yml`). Each push to `main` runs them
+again and, if they pass, deploys the Worker
+(`.github/workflows/build-and-deploy.yml`).
 
 Tests run each page's server load (and `handle`, for the redirect) with a
 session or none, a fake CMS serving fixtures shaped exactly like the contract
@@ -150,11 +152,8 @@ is public, so never put real courseware or VATUSA's wording in a test.
 
 ## Not yet set up
 
-The maintainer still has to create, on the IndyCenter Cloudflare account:
-
-1. The `indy-library` Worker (`pnpm deploy`), which also creates the
-   `library.flyindycenter.com` custom domain from `routes`.
-2. The `LIBRARY_API_TOKEN` secret, matching the credential the CMS expects.
-3. The `TRAINING` binding goes live once training-tools ships its `Teaching`
+1. The maintainer still has to set the `LIBRARY_API_TOKEN` secret on the
+   `indy-library` Worker, matching the credential the CMS expects.
+2. The `TRAINING` binding goes live once training-tools ships its `Teaching`
    entrypoint (branch `lesson-plan`). Until then the call fails, and no teacher
    notes are shown except to the Training Admin and leads.
