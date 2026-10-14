@@ -3,7 +3,11 @@
 	import Section from '$lib/components/Section.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 
+	import DraftBanner from '$lib/components/DraftBanner.svelte';
+
 	let { data } = $props();
+	// Pages beneath a draft stay on the draft.
+	let q = $derived(data.version.isDraft ? '?version=draft' : '');
 	let scenario = $derived(data.scenario);
 </script>
 
@@ -14,10 +18,14 @@
 <nav class="text-sm text-gray-400">
 	<a href="/" class="hover:text-sky-300">Courses</a>
 	<span class="mx-1">/</span>
-	<a href="/courses/{data.course.code}" class="hover:text-sky-300">{data.course.code}</a>
+	<a href="/courses/{data.course.code}{q}" class="hover:text-sky-300">{data.course.code}</a>
 	<span class="mx-1">/</span>
 	<span>Scenarios</span>
 </nav>
+
+{#if data.version.isDraft}
+	<div class="mt-4"><DraftBanner number={data.version.number} /></div>
+{/if}
 
 <header class="mt-2">
 	<div class="flex items-center gap-3">
@@ -76,7 +84,7 @@
 			{#each data.offeredBy as lp (lp.id)}
 				<li>
 					<a
-						href="/courses/{data.course.code}/lesson-plans/{lp.id}"
+						href="/courses/{data.course.code}/lesson-plans/{lp.id}{q}"
 						class="flex items-baseline gap-4 px-5 py-3 transition-colors duration-200 hover:bg-slate-700/40"
 					>
 						<span class="w-20 shrink-0 font-mono text-sm text-sky-300">{lp.code}</span>

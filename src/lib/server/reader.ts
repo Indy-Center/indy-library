@@ -1,6 +1,14 @@
 import { error } from '@sveltejs/kit';
+import type { SessionContext } from '@indy-center/identity';
 import { CmsUnavailableError } from '$lib/server/cms';
-import type { CourseVersionDocument, LessonPlan, Scenario, TaskRef } from '$lib/server/cms/types';
+import { isTrainingStaff } from '$lib/permissions';
+import type {
+	CourseSummary,
+	CourseVersionDocument,
+	LessonPlan,
+	Scenario,
+	TaskRef
+} from '$lib/server/cms/types';
 
 /**
  * What a reader may see, decided per request. Every page load goes through here rather than
@@ -20,14 +28,58 @@ export async function fromCms<T>(read: () => Promise<T>): Promise<T> {
 	}
 }
 
-/** The course's current version, or a 404. Older published versions are never read. */
-export async function currentVersion(
+/** Whether the request asks for the course's draft rather than its current version. */
+export function wantsDraft(url: URL): boolean {
+	return url.searchParams.get('version') === 'draft';
+}
+
+/** A course's draft is for its authors (by CID), the Training Admin and lead instructors. */
+export function maySeeDraft(
+	session: SessionContext | null,
+	course: { authors: string[] }
+): boolean {
+	if (!session) return false;
+	return isTrainingStaff(session.roles) || course.authors.includes(session.user.cid);
+}
+
+/** The course as the CMS lists it, or undefined when there is no such course. */
+export async function courseSummary(
 	locals: App.Locals,
 	code: string
+): Promise<CourseSummary | undefined> {
+	const { courses } = await fromCms(() => locals.cms.courseList());
+	return courses.find((course) => course.code === code);
+}
+
+/**
+ * The version of a course the request asks for, or a 404: the current version, or with
+ * `?version=draft` the draft. Older published versions are never read.
+ *
+ * Whether the reader may see the draft is decided from the course list before the draft is
+ * fetched, so a draft is never read for someone who may not see it. To them it is a 404, as if
+ * there were none.
+ */
+export async function courseVersion(
+	locals: App.Locals,
+	code: string,
+	url: URL
 ): Promise<CourseVersionDocument> {
-	const doc = await fromCms(() => locals.cms.courseVersion(code, 'current'));
+	if (wantsDraft(url)) {
+		const course = await courseSummary(locals, code);
+		if (!course?.draftVersion || !maySeeDraft(locals.session, course)) {
+			error(404, 'There is no such course.');
+		}
+	}
+	const doc = await fromCms(() =>
+		locals.cms.courseVersion(code, wantsDraft(url) ? 'draft' : 'current')
+	);
 	if (!doc) error(404, 'There is no such course.');
 	return doc;
+}
+
+/** What every course page says about the version it shows. */
+export function versionOf(doc: CourseVersionDocument) {
+	return { number: doc.version.number, isDraft: doc.version.status === 'draft' };
 }
 
 /** A lesson plan of the version, with the module it sits in, or a 404. */

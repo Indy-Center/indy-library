@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { library, run } from '$lib/testing/library';
 import { session } from '$lib/testing/readers';
+import { AUTHOR_CID } from '$lib/testing/fixtures';
 import { load } from './+page.server';
 
 const student = session('1000002');
@@ -56,6 +57,21 @@ describe('/courses/[code]/scenarios/[id]', () => {
 
 	it('is a 404 for a scenario the current version does not offer', async () => {
 		await expect(scenario(library(), 'scn-quiet', 'A-LC')).rejects.toMatchObject({
+			status: 404
+		});
+	});
+
+	it("shows a draft's scenario to the course's authors, and nobody else", async () => {
+		const href = '/courses/S-GC/scenarios/scn-quiet?version=draft';
+		const params = { code: 'S-GC', id: 'scn-quiet' };
+
+		const data = await run(load, library().event(session(AUTHOR_CID), href, params));
+		expect(data.version).toEqual({ number: 2, isDraft: true });
+		expect(data.offeredBy).toEqual([
+			{ id: 'lp-taxi', code: 'S-GC-1', title: 'Taxi basics, rewritten' }
+		]);
+
+		await expect(run(load, library().event(student, href, params))).rejects.toMatchObject({
 			status: 404
 		});
 	});

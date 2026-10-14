@@ -1,14 +1,14 @@
-import { currentVersion, findLessonPlan, taskRef } from '$lib/server/reader';
+import { courseVersion, versionOf, findLessonPlan, taskRef } from '$lib/server/reader';
 import type { PageServerLoad } from './$types';
 
-/** One lesson plan of a course's current version. */
-export const load = (async ({ locals, params }) => {
-	const doc = await currentVersion(locals, params.code);
+/** One lesson plan of the course version the reader asked for. */
+export const load = (async ({ locals, params, url }) => {
+	const doc = await courseVersion(locals, params.code, url);
 	const { module, lessonPlan } = findLessonPlan(doc, params.id);
 
 	return {
 		course: { code: doc.course.code, title: doc.course.title },
-		version: { number: doc.version.number, isDraft: doc.version.status === 'draft' },
+		version: versionOf(doc),
 		module: { title: module.title },
 		lessonPlan: {
 			id: lessonPlan.id,

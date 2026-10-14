@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { duration } from '$lib/format';
+	import DraftBanner from '$lib/components/DraftBanner.svelte';
 	import IconClock from '~icons/mdi/clock-outline';
 	import IconExam from '~icons/mdi/clipboard-check-outline';
 
 	let { data } = $props();
+	// Pages beneath a draft stay on the draft.
+	let q = $derived(data.version.isDraft ? '?version=draft' : '');
 </script>
 
 <svelte:head>
@@ -13,6 +16,15 @@
 <nav class="text-sm text-gray-400">
 	<a href="/" class="hover:text-sky-300">Courses</a>
 </nav>
+
+{#if data.version.isDraft}
+	<div class="mt-4">
+		<DraftBanner
+			number={data.version.number}
+			currentHref={data.hasCurrent ? `/courses/${data.course.code}` : null}
+		/>
+	</div>
+{/if}
 
 <header class="mt-2">
 	<div class="font-mono text-sm text-sky-300">{data.course.code}</div>
@@ -32,6 +44,14 @@
 	{#if data.version.description}
 		<p class="mt-4 max-w-3xl text-gray-300">{data.version.description}</p>
 	{/if}
+	{#if data.draft !== null}
+		<a
+			href="/courses/{data.course.code}?version=draft"
+			class="mt-4 inline-flex items-center gap-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3 py-1.5 text-sm text-yellow-200 hover:bg-yellow-500/20"
+		>
+			Read the draft, version {data.draft}
+		</a>
+	{/if}
 </header>
 
 <div class="mt-8 space-y-6">
@@ -50,7 +70,7 @@
 				{#each module.lessonPlans as lp (lp.id)}
 					<li>
 						<a
-							href="/courses/{data.course.code}/lesson-plans/{lp.id}"
+							href="/courses/{data.course.code}/lesson-plans/{lp.id}{q}"
 							class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-3 transition-colors duration-200 hover:bg-slate-700/40"
 						>
 							<span class="w-20 shrink-0 font-mono text-sm text-sky-300">{lp.code}</span>

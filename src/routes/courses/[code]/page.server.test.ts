@@ -3,10 +3,19 @@ import { FRESH_MS, KEEP_MS } from '$lib/server/cms';
 import { sgcCurrent } from '$lib/testing/fixtures';
 import { library, run } from '$lib/testing/library';
 import { session } from '$lib/testing/readers';
+import { AUTHOR_CID } from '$lib/testing/fixtures';
 import { load } from './+page.server';
 
 const student = session('1000002');
+const author = session(AUTHOR_CID);
+const admin = session('1000003', ['training:admin']);
+const lead = session('1000004', ['training:lead']);
 const CURRENT = '/api/courseware/courses/S-GC/current';
+const DRAFT = '/api/courseware/courses/S-GC/draft';
+
+function sgcDraft(lib: ReturnType<typeof library>, reader = author) {
+	return run(load, lib.event(reader, '/courses/S-GC?version=draft', { code: 'S-GC' }));
+}
 
 function sgc(lib: ReturnType<typeof library>) {
 	return run(load, lib.event(student, '/courses/S-GC', { code: 'S-GC' }));
@@ -104,5 +113,54 @@ describe('/courses/[code]', () => {
 		lib.cms.down();
 
 		await expect(sgc(lib)).rejects.toMatchObject({ status: 503 });
+	});
+
+	describe('the draft', () => {
+		it("is shown to the course's authors, marked as a draft", async () => {
+			const data = await sgcDraft(library());
+
+			expect(data.version).toMatchObject({ number: 2, isDraft: true });
+			expect(data.modules[0].lessonPlans.map((lp) => lp.title)).toEqual(['Taxi basics, rewritten']);
+		});
+
+		it('is shown to the Training Admin and lead instructors', async () => {
+			for (const reader of [admin, lead]) {
+				const data = await sgcDraft(library(), reader);
+				expect(data.version).toMatchObject({ number: 2, isDraft: true });
+			}
+		});
+
+		it('is a 404 for anyone else, and is never fetched for them', async () => {
+			const lib = library();
+
+			await expect(sgcDraft(lib, student)).rejects.toMatchObject({ status: 404 });
+			await expect(
+				run(load, lib.event(session('1000009'), '/courses/A-LC?version=draft', { code: 'A-LC' }))
+			).rejects.toMatchObject({ status: 404 });
+			expect(lib.cms.requests.filter((r) => r.endsWith('/draft'))).toEqual([]);
+		});
+
+		it("is offered from the current version's page to those who may see it", async () => {
+			expect((await sgc(library())).draft).toBeNull();
+			expect(
+				(await run(load, library().event(author, '/courses/S-GC', { code: 'S-GC' }))).draft
+			).toBe(2);
+		});
+
+		it('is not fetched to show the current version, even for its authors', async () => {
+			const lib = library();
+			await run(load, lib.event(author, '/courses/S-GC', { code: 'S-GC' }));
+
+			expect(lib.cms.asked(DRAFT)).toBe(0);
+		});
+
+		it('is shown for a course that has only a draft', async () => {
+			const data = await run(
+				load,
+				library().event(author, '/courses/X-NEW?version=draft', { code: 'X-NEW' })
+			);
+
+			expect(data.version).toMatchObject({ number: 1, isDraft: true });
+		});
 	});
 });

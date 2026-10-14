@@ -6,7 +6,11 @@
 	import IconClock from '~icons/mdi/clock-outline';
 	import IconExam from '~icons/mdi/clipboard-check-outline';
 
+	import DraftBanner from '$lib/components/DraftBanner.svelte';
+
 	let { data } = $props();
+	// Pages beneath a draft stay on the draft.
+	let q = $derived(data.version.isDraft ? '?version=draft' : '');
 	let lp = $derived(data.lessonPlan);
 </script>
 
@@ -17,10 +21,14 @@
 <nav class="text-sm text-gray-400">
 	<a href="/" class="hover:text-sky-300">Courses</a>
 	<span class="mx-1">/</span>
-	<a href="/courses/{data.course.code}" class="hover:text-sky-300">{data.course.code}</a>
+	<a href="/courses/{data.course.code}{q}" class="hover:text-sky-300">{data.course.code}</a>
 	<span class="mx-1">/</span>
 	<span>{data.module.title}</span>
 </nav>
+
+{#if data.version.isDraft}
+	<div class="mt-4"><DraftBanner number={data.version.number} /></div>
+{/if}
 
 <header class="mt-2">
 	<div class="font-mono text-sm text-sky-300">{lp.code}</div>
@@ -75,7 +83,7 @@
 			{#each data.scenarios as scenario (scenario.id)}
 				<li>
 					<a
-						href="/courses/{data.course.code}/scenarios/{scenario.id}"
+						href="/courses/{data.course.code}/scenarios/{scenario.id}{q}"
 						class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-3 transition-colors duration-200 hover:bg-slate-700/40"
 					>
 						<span class="flex-1 font-medium text-white">{scenario.name}</span>

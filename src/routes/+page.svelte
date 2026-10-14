@@ -18,7 +18,9 @@
 		{#each data.courses as course (course.code)}
 			<li>
 				<a
-					href="/courses/{course.code}"
+					href={course.hasCurrent
+						? `/courses/${course.code}`
+						: `/courses/${course.code}?version=draft`}
 					class="block h-full rounded-lg border border-slate-700/60 bg-slate-800/60 p-5 transition-colors duration-200 hover:border-sky-500/50 hover:bg-slate-700/60"
 				>
 					<div class="flex items-center gap-2 font-mono text-sm text-sky-300">
@@ -26,6 +28,11 @@
 						{course.code}
 					</div>
 					<div class="mt-2 text-lg font-semibold text-white">{course.title}</div>
+					{#if course.draft !== null}
+						<div class="mt-3 text-xs font-medium text-yellow-300">
+							{course.hasCurrent ? `Draft version ${course.draft} in progress` : 'Draft only'}
+						</div>
+					{/if}
 				</a>
 			</li>
 		{/each}

@@ -1,21 +1,32 @@
-import { currentVersion } from '$lib/server/reader';
+import { courseSummary, courseVersion, maySeeDraft, versionOf } from '$lib/server/reader';
 import type { PageServerLoad } from './$types';
 
-/** A course's current version: its modules in order, each with its lesson plans. */
-export const load = (async ({ locals, params }) => {
-	const doc = await currentVersion(locals, params.code);
+/**
+ * A course's current version, or its draft for those who may see it: its modules in order, each
+ * with its lesson plans.
+ */
+export const load = (async ({ locals, params, url }) => {
+	const doc = await courseVersion(locals, params.code, url);
+	const isDraft = doc.version.status === 'draft';
+	const summary = await courseSummary(locals, params.code);
 
 	// Built field by field rather than passed through, so nothing the reader may not see (teacher
 	// notes, authors) reaches the browser by accident.
 	return {
 		course: { code: doc.course.code, title: doc.course.title },
 		version: {
-			number: doc.version.number,
-			isDraft: doc.version.status === 'draft',
+			...versionOf(doc),
 			description: doc.version.description,
 			time: doc.version.time,
 			academyRequired: doc.version.academyRequired
 		},
+		// The draft's number, to link to it from the current version, for those who may see it.
+		draft:
+			!isDraft && summary?.draftVersion && maySeeDraft(locals.session, summary)
+				? summary.draftVersion.number
+				: null,
+		// Whether there is a current version to link back to from the draft.
+		hasCurrent: Boolean(summary?.currentVersion),
 		modules: doc.modules.map((module) => ({
 			id: module.id,
 			title: module.title,
