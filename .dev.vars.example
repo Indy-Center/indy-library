@@ -1,0 +1,16 @@
+# Copy to .dev.vars for local development.
+#
+# Wrangler loads .dev.vars over the `vars` block in wrangler.jsonc. Bindings
+# (IDENTITY, TRAINING) are not env vars; they live in wrangler.jsonc.
+# See README.md "Local development".
+
+# A locally-running identity, started with COOKIE_DOMAIN=localhost.
+PUBLIC_IDENTITY_URL=http://localhost:8787
+
+# A locally-running CMS (the payload repo's dev server), or leave the
+# production one from wrangler.jsonc.
+CMS_URL=http://localhost:3000
+
+# The CMS's server credential for the courseware documents. In production this
+# is a Worker secret (`wrangler secret put LIBRARY_API_TOKEN`).
+LIBRARY_API_TOKEN=
