@@ -2,6 +2,7 @@
 	import { duration } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
+	import ModeBadge from '$lib/components/ModeBadge.svelte';
 	import IconClock from '~icons/mdi/clock-outline';
 	import IconExam from '~icons/mdi/clipboard-check-outline';
 
@@ -63,5 +64,27 @@
 				</li>
 			{/each}
 		</ol>
+	{/if}
+</Section>
+
+<Section title="Scenarios offered">
+	{#if data.scenarios.length === 0}
+		<p class="px-5 py-4 text-sm text-gray-400">This lesson plan offers no scenarios.</p>
+	{:else}
+		<ul class="divide-y divide-slate-700/60">
+			{#each data.scenarios as scenario (scenario.id)}
+				<li>
+					<a
+						href="/courses/{data.course.code}/scenarios/{scenario.id}"
+						class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-3 transition-colors duration-200 hover:bg-slate-700/40"
+					>
+						<span class="flex-1 font-medium text-white">{scenario.name}</span>
+						<span class="font-mono text-sm text-gray-300">{scenario.position}</span>
+						<span class="text-sm text-gray-400">{scenario.difficulty}</span>
+						<ModeBadge mode={scenario.mode} />
+					</a>
+				</li>
+			{/each}
+		</ul>
 	{/if}
 </Section>

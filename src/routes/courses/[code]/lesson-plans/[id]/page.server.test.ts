@@ -37,6 +37,21 @@ describe('/courses/[code]/lesson-plans/[id]', () => {
 		]);
 	});
 
+	it('lists the scenarios it offers', async () => {
+		const data = await lessonPlan(library(), 'lp-taxi');
+
+		expect(data.scenarios).toEqual([
+			{
+				id: 'scn-quiet',
+				name: 'A quiet afternoon at Example Field',
+				airport: 'KXMP',
+				position: 'XMP_GND',
+				difficulty: 'Easy',
+				mode: 'sim'
+			}
+		]);
+	});
+
 	it('sends a student no teacher notes', async () => {
 		const data = await lessonPlan(library(), 'lp-taxi');
 

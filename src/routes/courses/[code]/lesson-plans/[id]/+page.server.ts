@@ -20,6 +20,14 @@ export const load = (async ({ locals, params }) => {
 			isExam: lessonPlan.isExam,
 			minimum: lessonPlan.minimum?.label ?? null
 		},
-		theoryItems: lessonPlan.theoryItems.map((item) => ({ id: item.id, task: taskRef(item.task) }))
+		theoryItems: lessonPlan.theoryItems.map((item) => ({ id: item.id, task: taskRef(item.task) })),
+		scenarios: lessonPlan.scenarios.map((scenario) => ({
+			id: scenario.id,
+			name: scenario.name,
+			airport: scenario.airport,
+			position: scenario.position,
+			difficulty: scenario.difficulty,
+			mode: scenario.mode
+		}))
 	};
 }) satisfies PageServerLoad;
