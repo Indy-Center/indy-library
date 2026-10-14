@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Section from '$lib/components/Section.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
+	import IconLink from '~icons/mdi/open-in-new';
 
 	let { data } = $props();
 </script>
@@ -42,6 +43,66 @@
 		<ul class="divide-y divide-slate-700/60">
 			{#each data.children as child (child.id)}
 				<li class="px-5 py-3"><TaskLink task={child} /></li>
+			{/each}
+		</ul>
+	</Section>
+{/if}
+
+<Section title="Competencies">
+	{#if data.mappings.length === 0}
+		<p class="px-5 py-4 text-sm text-gray-400">This task is not mapped to a competency yet.</p>
+	{:else}
+		<ul class="divide-y divide-slate-700/60">
+			{#each data.mappings as mapping (mapping.competency.id)}
+				<li class="px-5 py-3">
+					<a href="/competencies/{mapping.competency.id}" class="group block">
+						<span class="text-xs text-gray-400">
+							{mapping.framework.name}
+							{mapping.framework.edition}
+						</span>
+						<span class="flex items-baseline gap-2">
+							<span class="font-mono text-sm text-sky-300">{mapping.competency.sourceId}</span>
+							<span class="text-white group-hover:text-sky-200">{mapping.competency.title}</span>
+						</span>
+					</a>
+					{#if mapping.inheritedFrom}
+						<p class="mt-1 text-xs text-gray-400">
+							Mapped on
+							<a href="/tasks/{mapping.inheritedFrom.id}" class="text-gray-300 hover:text-sky-300">
+								{mapping.inheritedFrom.number}
+								{mapping.inheritedFrom.name}</a
+							>, above this task
+						</p>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	{/if}
+</Section>
+
+{#if data.citations.length > 0}
+	<Section title="References">
+		<ul class="divide-y divide-slate-700/60">
+			{#each data.citations as citation, i (i)}
+				<li class="flex flex-wrap items-baseline gap-x-3 px-5 py-3">
+					{#if citation.url}
+						<a
+							href={citation.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center gap-1 text-white hover:text-sky-200"
+						>
+							{citation.name}
+							<IconLink class="h-3 w-3" aria-hidden="true" />
+						</a>
+					{:else}
+						<span class="text-white">{citation.name}</span>
+					{/if}
+					<span class="text-sm text-gray-400">{citation.edition}</span>
+					{#if citation.section}
+						<span class="font-mono text-sm text-sky-300">{citation.section}</span>
+					{/if}
+				</li>
 			{/each}
 		</ul>
 	</Section>

@@ -3,20 +3,45 @@ import { fromCms, taskRef } from '$lib/server/reader';
 import type { CatalogueTask } from '$lib/server/cms/types';
 import type { PageServerLoad } from './$types';
 
-/** One task of the shared task tree, and its place in it. */
+/** One task of the shared task tree: its place in it, its mappings and its citations. */
 export const load = (async ({ locals, params }) => {
 	const catalogue = await fromCms(() => locals.cms.catalogue());
-	const byId = new Map(catalogue.tasks.map((t) => [t.id, t]));
+	const tasks = new Map(catalogue.tasks.map((t) => [t.id, t]));
+	const competencies = new Map(catalogue.competencies.map((c) => [c.id, c]));
+	const frameworks = new Map(catalogue.frameworks.map((f) => [f.id, f]));
+	const references = new Map(catalogue.references.map((r) => [r.id, r]));
 
-	const task = byId.get(params.id);
+	const task = tasks.get(params.id);
 	if (!task) error(404, 'There is no such task.');
 
 	const ancestors: CatalogueTask[] = [];
-	for (let up = task.parentId; up; up = byId.get(up)?.parentId ?? null) {
-		const parent = byId.get(up);
+	for (let up = task.parentId; up; up = tasks.get(up)?.parentId ?? null) {
+		const parent = tasks.get(up);
 		if (!parent || ancestors.includes(parent)) break;
 		ancestors.unshift(parent);
 	}
+
+	// The CMS already applies a mapping to every task beneath the one it is written on;
+	// `fromTaskId` says which task that was.
+	const mappings = task.mappings.flatMap(({ competencyId, fromTaskId }) => {
+		const competency = competencies.get(competencyId);
+		const framework = competency && frameworks.get(competency.frameworkId);
+		if (!competency || !framework) return [];
+		const from = fromTaskId === task.id ? undefined : tasks.get(fromTaskId);
+		return [
+			{
+				competency: { id: competency.id, sourceId: competency.sourceId, title: competency.title },
+				framework: { name: framework.name, edition: framework.edition },
+				inheritedFrom: from ? taskRef(from) : null
+			}
+		];
+	});
+
+	const citations = task.citations.flatMap(({ referenceId, section }) => {
+		const reference = references.get(referenceId);
+		if (!reference) return [];
+		return [{ name: reference.name, edition: reference.edition, url: reference.url, section }];
+	});
 
 	return {
 		task: {
@@ -28,6 +53,8 @@ export const load = (async ({ locals, params }) => {
 		},
 		ancestors: ancestors.map(taskRef),
 		// The catalogue is in tree order, so siblings come out in theirs.
-		children: catalogue.tasks.filter((t) => t.parentId === task.id).map(taskRef)
+		children: catalogue.tasks.filter((t) => t.parentId === task.id).map(taskRef),
+		mappings,
+		citations
 	};
 }) satisfies PageServerLoad;

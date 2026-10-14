@@ -34,6 +34,33 @@ describe('/tasks/[id]', () => {
 		]);
 	});
 
+	it('shows the competencies it is mapped to, including those inherited from above', async () => {
+		const data = await task('task-readback');
+
+		expect(data.mappings).toEqual([
+			{
+				competency: { id: 'comp-usa-taxi', sourceId: '1.1', title: 'Taxi instructions' },
+				framework: { name: 'USA', edition: 'Example edition 1' },
+				inheritedFrom: { id: 'task-ground', number: '1', name: 'Ground movement' }
+			},
+			{
+				competency: { id: 'comp-gcap-move', sourceId: 'G-9.9', title: 'Movement area' },
+				framework: { name: 'GCAP', edition: 'Example edition 2' },
+				inheritedFrom: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' }
+			}
+		]);
+		expect((await task('task-ground')).mappings[0].inheritedFrom).toBeNull();
+	});
+
+	it('shows the references it cites, with section and link', async () => {
+		expect((await task('task-ground')).citations).toEqual([
+			{ name: 'Example Order', edition: 'B', url: 'https://example.com/order', section: '3-7-2' }
+		]);
+		expect((await task('task-taxi-clearance')).citations).toEqual([
+			{ name: 'Example Notes', edition: '2', url: null, section: 'Chapter 4' }
+		]);
+	});
+
 	it('is a 404 for a task that does not exist', async () => {
 		await expect(task('task-none')).rejects.toMatchObject({ status: 404 });
 	});
