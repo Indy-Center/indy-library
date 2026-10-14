@@ -77,6 +77,35 @@ export async function courseVersion(
 	return doc;
 }
 
+/**
+ * Whether the reader may see this course's teacher notes: the Training Admin and lead
+ * instructors on every course, and a teacher on the courses training-tools says they may teach.
+ *
+ * Ask only when the page has teacher notes to show: it is a call to another Worker. When
+ * training-tools does not answer in time, the answer is no.
+ */
+export async function maySeeTeacherNotes(locals: App.Locals, courseCode: string): Promise<boolean> {
+	const session = locals.session;
+	if (!session) return false;
+	if (isTrainingStaff(session.roles)) return true;
+	const taught = await locals.teaching.coursesTaught(session.user.cid);
+	return taught?.includes(courseCode) ?? false;
+}
+
+/**
+ * Teacher notes as the page is sent them: the notes when the reader may see them, otherwise
+ * null. Notes are only ever sent through this, so a reader who may not see them never receives
+ * them, not even hidden in the page.
+ */
+export function teacherNotes(notes: string, shown: boolean): string | null {
+	return shown && notes.trim() ? notes : null;
+}
+
+/** Whether any of these items carries teacher notes, so there is something to decide. */
+export function hasTeacherNotes(items: { teacherNotes: string }[]): boolean {
+	return items.some((item) => item.teacherNotes.trim() !== '');
+}
+
 /** What every course page says about the version it shows. */
 export function versionOf(doc: CourseVersionDocument) {
 	return { number: doc.version.number, isDraft: doc.version.status === 'draft' };

@@ -50,5 +50,6 @@ describe('handle', () => {
 		expect(resolve).toHaveBeenCalled();
 		expect(event.locals.session?.user.cid).toBe('1000002');
 		expect(event.locals.cms).toBeDefined();
+		expect(event.locals.teaching).toBeDefined();
 	});
 });

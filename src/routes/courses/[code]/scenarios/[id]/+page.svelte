@@ -2,6 +2,8 @@
 	import ModeBadge from '$lib/components/ModeBadge.svelte';
 	import Section from '$lib/components/Section.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
+	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
+	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
 
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
 
@@ -59,18 +61,27 @@
 	</dl>
 </header>
 
+{#if data.showsTeacherNotes}
+	<TeacherNotesNotice />
+{/if}
+
 <Section title="Practical tasks">
 	{#if data.practicalTasks.length === 0}
 		<p class="px-5 py-4 text-sm text-gray-400">This scenario has no practical tasks.</p>
 	{:else}
 		<ol class="divide-y divide-slate-700/60">
 			{#each data.practicalTasks as pt (pt.id)}
-				<li class="flex flex-wrap items-baseline justify-between gap-2 px-5 py-3">
-					<TaskLink task={pt.task} />
-					{#if pt.required}
-						<span class="text-xs font-medium text-sky-300">Required</span>
-					{:else}
-						<span class="text-xs text-gray-400">Optional</span>
+				<li class="px-5 py-3">
+					<div class="flex flex-wrap items-baseline justify-between gap-2">
+						<TaskLink task={pt.task} />
+						{#if pt.required}
+							<span class="text-xs font-medium text-sky-300">Required</span>
+						{:else}
+							<span class="text-xs text-gray-400">Optional</span>
+						{/if}
+					</div>
+					{#if pt.teacherNotes}
+						<TeacherNotes notes={pt.teacherNotes} />
 					{/if}
 				</li>
 			{/each}

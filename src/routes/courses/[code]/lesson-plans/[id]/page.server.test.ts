@@ -32,9 +32,14 @@ describe('/courses/[code]/lesson-plans/[id]', () => {
 		expect(data.theoryItems).toEqual([
 			{
 				id: 'ti-1',
-				task: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' }
+				task: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' },
+				teacherNotes: null
 			},
-			{ id: 'ti-2', task: { id: 'task-progressive', number: '1.2', name: 'Give progressive taxi' } }
+			{
+				id: 'ti-2',
+				task: { id: 'task-progressive', number: '1.2', name: 'Give progressive taxi' },
+				teacherNotes: null
+			}
 		]);
 	});
 

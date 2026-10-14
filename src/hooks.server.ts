@@ -2,6 +2,7 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { getSessionContext, resolveIdentityUrl } from '$lib/server/identity';
 import { loginUrl } from '$lib/identity-links';
 import { cacheApiStore, createCms, memoryStore, type Cms } from '$lib/server/cms';
+import { createTeaching } from '$lib/server/teaching';
 
 /**
  * Loads the session once per request, then gates. Every page needs a session: there is no
@@ -22,6 +23,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	event.locals.cms = cmsFor(event.platform);
+	// Per request, so training-tools is asked at most once per request, and only by a page that
+	// has teacher notes to decide on.
+	event.locals.teaching = createTeaching(event.platform?.env.TRAINING);
 	return resolve(event);
 };
 

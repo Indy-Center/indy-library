@@ -2,6 +2,8 @@
 	import { duration } from '$lib/format';
 	import Section from '$lib/components/Section.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
+	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
+	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
 	import ModeBadge from '$lib/components/ModeBadge.svelte';
 	import IconClock from '~icons/mdi/clock-outline';
 	import IconExam from '~icons/mdi/clipboard-check-outline';
@@ -61,6 +63,10 @@
 	</article>
 {/if}
 
+{#if data.showsTeacherNotes}
+	<TeacherNotesNotice />
+{/if}
+
 <Section title="Theory items">
 	{#if data.theoryItems.length === 0}
 		<p class="px-5 py-4 text-sm text-gray-400">This lesson plan has no theory items.</p>
@@ -69,6 +75,9 @@
 			{#each data.theoryItems as item (item.id)}
 				<li class="px-5 py-3">
 					<TaskLink task={item.task} />
+					{#if item.teacherNotes}
+						<TeacherNotes notes={item.teacherNotes} />
+					{/if}
 				</li>
 			{/each}
 		</ol>

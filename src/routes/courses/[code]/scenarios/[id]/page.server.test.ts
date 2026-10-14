@@ -33,12 +33,14 @@ describe('/courses/[code]/scenarios/[id]', () => {
 			{
 				id: 'pt-1',
 				task: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' },
-				required: true
+				required: true,
+				teacherNotes: null
 			},
 			{
 				id: 'pt-2',
 				task: { id: 'task-progressive', number: '1.2', name: 'Give progressive taxi' },
-				required: false
+				required: false,
+				teacherNotes: null
 			}
 		]);
 	});

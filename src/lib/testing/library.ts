@@ -1,5 +1,6 @@
 import type { SessionContext } from '@indy-center/identity';
 import { createCms, memoryStore } from '$lib/server/cms';
+import { createTeaching, type TeachingBinding } from '$lib/server/teaching';
 import { catalogue, courseList, sgcCurrent, sgcDraft, alcCurrent, xnewDraft } from './fixtures';
 
 export const CMS_URL = 'https://cms.example.test';
@@ -51,16 +52,40 @@ export function fakeCms(documents = cmsDocuments()) {
 }
 
 /**
+ * A stand-in for training-tools' `Teaching` entrypoint: answers from `taught` by CID (nothing
+ * for anyone else), or always throws, or never answers. Records every CID asked about.
+ */
+export function fakeTraining(taught: Record<string, string[]> | 'throws' | 'hangs' = {}) {
+	const asked: string[] = [];
+	const binding: TeachingBinding = {
+		async coursesTaught(cid) {
+			asked.push(cid);
+			if (taught === 'throws') throw new Error('training-tools is down');
+			if (taught === 'hangs') return new Promise<string[]>(() => {});
+			return taught[cid] ?? [];
+		}
+	};
+	return { binding, asked };
+}
+
+/** How long tests let training-tools take before giving up on it. */
+export const TEST_TEACHING_TIMEOUT_MS = 20;
+
+/**
  * One running library: a fake CMS, the kept copies (shared across requests, as the Cache API
  * is), and a clock tests can move. `event()` builds what one request's page load receives.
  */
-export function library(opts: { cms?: ReturnType<typeof fakeCms> } = {}) {
+export function library(
+	opts: { cms?: ReturnType<typeof fakeCms>; training?: ReturnType<typeof fakeTraining> } = {}
+) {
 	const cms = opts.cms ?? fakeCms();
+	const training = opts.training ?? fakeTraining();
 	const store = memoryStore();
 	const clock = { now: Date.parse('2026-10-14T12:00:00Z') };
 
 	return {
 		cms,
+		training,
 		clock,
 		event(reader: SessionContext | null, href: string, params: Record<string, string> = {}) {
 			return {
@@ -74,7 +99,8 @@ export function library(opts: { cms?: ReturnType<typeof fakeCms> } = {}) {
 						fetch: cms.fetch,
 						store,
 						now: () => clock.now
-					})
+					}),
+					teaching: createTeaching(training.binding, TEST_TEACHING_TIMEOUT_MS)
 				}
 			};
 		}

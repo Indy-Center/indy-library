@@ -1,5 +1,6 @@
 import type { IdentityBinding, SessionContext } from '@indy-center/identity';
 import type { Cms } from '$lib/server/cms';
+import type { Teaching, TeachingBinding } from '$lib/server/teaching';
 
 declare global {
 	namespace Cloudflare {
@@ -23,13 +24,16 @@ declare global {
 			session: SessionContext | null;
 			/** The courseware documents, read from the CMS and kept for a few minutes. */
 			cms: Cms;
+			/** training-tools' answer to "which courses may this person teach?". */
+			teaching: Teaching;
 		}
 
 		interface Platform {
-			// `wrangler types` only knows IDENTITY as a bare Fetcher, so it is replaced with its
-			// RPC shape. Optional, because `vite dev` may run without it.
-			env: Omit<Cloudflare.Env, 'IDENTITY'> & {
+			// `wrangler types` only knows IDENTITY and TRAINING as bare Fetchers, so they are
+			// replaced with their RPC shapes. Optional, because `vite dev` may run without them.
+			env: Omit<Cloudflare.Env, 'IDENTITY' | 'TRAINING'> & {
 				IDENTITY?: IdentityBinding;
+				TRAINING?: TeachingBinding;
 			};
 			// The adapter declares this against @cloudflare/workers-types, which this project
 			// replaces with `wrangler types`; restated here so it type-checks.

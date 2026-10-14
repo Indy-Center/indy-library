@@ -1,10 +1,20 @@
-import { courseVersion, versionOf, findLessonPlan, taskRef } from '$lib/server/reader';
+import {
+	courseVersion,
+	findLessonPlan,
+	hasTeacherNotes,
+	maySeeTeacherNotes,
+	taskRef,
+	teacherNotes,
+	versionOf
+} from '$lib/server/reader';
 import type { PageServerLoad } from './$types';
 
 /** One lesson plan of the course version the reader asked for. */
 export const load = (async ({ locals, params, url }) => {
 	const doc = await courseVersion(locals, params.code, url);
 	const { module, lessonPlan } = findLessonPlan(doc, params.id);
+	const showsTeacherNotes =
+		hasTeacherNotes(lessonPlan.theoryItems) && (await maySeeTeacherNotes(locals, doc.course.code));
 
 	return {
 		course: { code: doc.course.code, title: doc.course.title },
@@ -20,7 +30,12 @@ export const load = (async ({ locals, params, url }) => {
 			isExam: lessonPlan.isExam,
 			minimum: lessonPlan.minimum?.label ?? null
 		},
-		theoryItems: lessonPlan.theoryItems.map((item) => ({ id: item.id, task: taskRef(item.task) })),
+		showsTeacherNotes,
+		theoryItems: lessonPlan.theoryItems.map((item) => ({
+			id: item.id,
+			task: taskRef(item.task),
+			teacherNotes: teacherNotes(item.teacherNotes, showsTeacherNotes)
+		})),
 		scenarios: lessonPlan.scenarios.map((scenario) => ({
 			id: scenario.id,
 			name: scenario.name,
