@@ -1,6 +1,7 @@
 import { redirect, type Handle } from '@sveltejs/kit';
 import { getSessionContext, resolveIdentityUrl } from '$lib/server/identity';
 import { loginUrl } from '$lib/identity-links';
+import { cacheApiStore, createCms, memoryStore, type Cms } from '$lib/server/cms';
 
 /**
  * Loads the session once per request, then gates. Every page needs a session: there is no
@@ -20,5 +21,23 @@ export const handle: Handle = async ({ event, resolve }) => {
 		redirect(302, loginUrl(resolveIdentityUrl(event.platform), event.url.href));
 	}
 
+	event.locals.cms = cmsFor(event.platform);
 	return resolve(event);
 };
+
+/** Kept copies for `vite dev`, which may have no Cache API. Never used on Cloudflare. */
+const devCopies = memoryStore();
+
+function cmsFor(platform: App.Platform | undefined): Cms {
+	const env = platform?.env;
+	if (!env?.LIBRARY_API_TOKEN) {
+		console.warn('[indy-library] LIBRARY_API_TOKEN is not set; the CMS will refuse every read');
+	}
+	const cache = platform?.caches?.default;
+	return createCms({
+		baseUrl: env?.CMS_URL ?? 'https://cms.flyindycenter.com',
+		token: env?.LIBRARY_API_TOKEN,
+		fetch: (input, init) => fetch(input, init),
+		store: cache ? cacheApiStore(cache) : devCopies
+	});
+}

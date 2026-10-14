@@ -49,5 +49,6 @@ describe('handle', () => {
 		expect(identity.getSessionContext).toHaveBeenCalledWith('token');
 		expect(resolve).toHaveBeenCalled();
 		expect(event.locals.session?.user.cid).toBe('1000002');
+		expect(event.locals.cms).toBeDefined();
 	});
 });
