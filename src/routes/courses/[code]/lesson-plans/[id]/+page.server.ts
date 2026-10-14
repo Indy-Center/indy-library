@@ -1,4 +1,4 @@
-import { currentVersion, findLessonPlan } from '$lib/server/reader';
+import { currentVersion, findLessonPlan, taskRef } from '$lib/server/reader';
 import type { PageServerLoad } from './$types';
 
 /** One lesson plan of a course's current version. */
@@ -19,6 +19,7 @@ export const load = (async ({ locals, params }) => {
 			time: lessonPlan.time,
 			isExam: lessonPlan.isExam,
 			minimum: lessonPlan.minimum?.label ?? null
-		}
+		},
+		theoryItems: lessonPlan.theoryItems.map((item) => ({ id: item.id, task: taskRef(item.task) }))
 	};
 }) satisfies PageServerLoad;

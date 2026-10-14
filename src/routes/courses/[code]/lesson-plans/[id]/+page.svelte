@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { duration } from '$lib/format';
+	import Section from '$lib/components/Section.svelte';
+	import TaskLink from '$lib/components/TaskLink.svelte';
 	import IconClock from '~icons/mdi/clock-outline';
 	import IconExam from '~icons/mdi/clipboard-check-outline';
 
@@ -49,3 +51,17 @@
 		{@html lp.bodyHtml}
 	</article>
 {/if}
+
+<Section title="Theory items">
+	{#if data.theoryItems.length === 0}
+		<p class="px-5 py-4 text-sm text-gray-400">This lesson plan has no theory items.</p>
+	{:else}
+		<ol class="divide-y divide-slate-700/60">
+			{#each data.theoryItems as item (item.id)}
+				<li class="px-5 py-3">
+					<TaskLink task={item.task} />
+				</li>
+			{/each}
+		</ol>
+	{/if}
+</Section>

@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 import { CmsUnavailableError } from '$lib/server/cms';
-import type { CourseVersionDocument, LessonPlan } from '$lib/server/cms/types';
+import type { CourseVersionDocument, LessonPlan, TaskRef } from '$lib/server/cms/types';
 
 /**
  * What a reader may see, decided per request. Every page load goes through here rather than
@@ -40,4 +40,9 @@ export function findLessonPlan(
 		if (lessonPlan) return { module, lessonPlan };
 	}
 	error(404, 'This course has no such lesson plan.');
+}
+
+/** A task as a link to its page shows it. */
+export function taskRef(task: TaskRef): TaskRef {
+	return { id: task.id, number: task.number, name: task.name };
 }

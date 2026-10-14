@@ -25,6 +25,24 @@ describe('/courses/[code]/lesson-plans/[id]', () => {
 		});
 	});
 
+	it('lists its theory items in order, each with its task number and name', async () => {
+		const data = await lessonPlan(library(), 'lp-taxi');
+
+		expect(data.theoryItems).toEqual([
+			{
+				id: 'ti-1',
+				task: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' }
+			},
+			{ id: 'ti-2', task: { id: 'task-progressive', number: '1.2', name: 'Give progressive taxi' } }
+		]);
+	});
+
+	it('sends a student no teacher notes', async () => {
+		const data = await lessonPlan(library(), 'lp-taxi');
+
+		expect(JSON.stringify(data)).not.toContain('SECRET');
+	});
+
 	it('is a 404 for a lesson plan not in the current version', async () => {
 		await expect(lessonPlan(library(), 'lp-runway')).rejects.toMatchObject({ status: 404 });
 	});
