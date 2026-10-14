@@ -139,7 +139,8 @@ there is no Cache API in dev, copies are kept in memory instead.
 pnpm format:check && pnpm build && pnpm check && pnpm test
 ```
 
-`build` comes before `check`, as in training-tools.
+`build` comes before `check`, as in training-tools. CI runs exactly these on
+every pull request (`.github/workflows/ci.yml`).
 
 Tests run each page's server load (and `handle`, for the redirect) with a
 session or none, a fake CMS serving fixtures shaped exactly like the contract
@@ -149,13 +150,11 @@ is public, so never put real courseware or VATUSA's wording in a test.
 
 ## Not yet set up
 
-The maintainer still has to create, on the IndyCenter Cloudflare account and
-GitHub:
+The maintainer still has to create, on the IndyCenter Cloudflare account:
 
-1. The `Indy-Center/indy-library` GitHub repository, and push this one to it.
-2. The `indy-library` Worker (`pnpm deploy`), which also creates the
+1. The `indy-library` Worker (`pnpm deploy`), which also creates the
    `library.flyindycenter.com` custom domain from `routes`.
-3. The `LIBRARY_API_TOKEN` secret, matching the credential the CMS expects.
-4. The `TRAINING` binding goes live once training-tools ships its `Teaching`
+2. The `LIBRARY_API_TOKEN` secret, matching the credential the CMS expects.
+3. The `TRAINING` binding goes live once training-tools ships its `Teaching`
    entrypoint (branch `lesson-plan`). Until then the call fails, and no teacher
    notes are shown except to the Training Admin and leads.
