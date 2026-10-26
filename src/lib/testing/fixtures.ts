@@ -96,12 +96,35 @@ const version = {
 	status: 'published' as const,
 	description: 'The made-up ground control course.',
 	time: 600,
-	academyRequired: true,
+	completionStandard: 'Pass every lesson plan.',
 	updatedAt: '2026-10-01T12:00:00.000Z'
 };
 
+/** A course that asks nothing before enrolling and says nothing of how long it runs. */
+const noFacts = {
+	prerequisitesNote: '',
+	consolidation: null,
+	ratingExam: null,
+	academyExam: null,
+	estimatedWeeks: null,
+	examOptional: false,
+	moodleUrl: null
+};
+
 export const sgcCurrent: CourseVersionDocument = {
-	course: { id: 'course-sgc', code: 'S-GC', title: 'Ground Control', authors: [AUTHOR_CID] },
+	course: {
+		id: 'course-sgc',
+		code: 'S-GC',
+		title: 'Ground Control',
+		authors: [AUTHOR_CID],
+		prerequisitesNote: 'Read the made-up policy first.',
+		consolidation: { hours: 10, positionTypes: ['DEL', 'GND'] },
+		ratingExam: 'S1',
+		academyExam: 'S2',
+		estimatedWeeks: { min: 4, max: 8 },
+		examOptional: false,
+		moodleUrl: 'https://moodle.example.com/course/1'
+	},
 	version: { id: 'ver-sgc-1', number: 1, ...version },
 	scale: { id: 'scale-1', name: 'Three points', points: POINTS },
 	defaultMinimum: POINTS[1],
@@ -128,7 +151,7 @@ export const sgcDraft: CourseVersionDocument = {
 };
 
 export const alcCurrent: CourseVersionDocument = {
-	course: { id: 'course-alc', code: 'A-LC', title: 'Local Control', authors: [] },
+	course: { id: 'course-alc', code: 'A-LC', title: 'Local Control', authors: [], ...noFacts },
 	version: { id: 'ver-alc-1', number: 1, ...version, description: 'The made-up tower course.' },
 	scale: { id: 'scale-1', name: 'Three points', points: POINTS },
 	defaultMinimum: POINTS[1],
@@ -163,7 +186,13 @@ export const alcCurrent: CourseVersionDocument = {
 
 /** X-NEW has only a draft. */
 export const xnewDraft: CourseVersionDocument = {
-	course: { id: 'course-xnew', code: 'X-NEW', title: 'Unreleased Course', authors: [AUTHOR_CID] },
+	course: {
+		id: 'course-xnew',
+		code: 'X-NEW',
+		title: 'Unreleased Course',
+		authors: [AUTHOR_CID],
+		...noFacts
+	},
 	version: { id: 'ver-xnew-1', number: 1, ...version, status: 'draft' },
 	scale: null,
 	defaultMinimum: null,

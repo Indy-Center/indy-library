@@ -37,8 +37,8 @@
 				{duration(data.version.time)}
 			</span>
 		{/if}
-		{#if data.version.academyRequired}
-			<span>VATUSA Academy course required</span>
+		{#if data.course.academyExam}
+			<span>VATUSA Academy {data.course.academyExam} exam required</span>
 		{/if}
 	</div>
 	{#if data.version.description}
