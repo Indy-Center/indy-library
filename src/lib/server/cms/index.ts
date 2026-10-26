@@ -20,7 +20,7 @@ export type Cms = {
 	 * only for a reader who may see it: drafts are fetched for nobody else.
 	 */
 	courseVersion(code: string, which: 'current' | 'draft'): Promise<CourseVersionDocument | null>;
-	/** The task tree, frameworks, competencies and references. */
+	/** The task tree, frameworks, competencies and sources. */
 	catalogue(): Promise<Catalogue>;
 };
 

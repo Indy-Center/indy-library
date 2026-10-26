@@ -79,7 +79,7 @@ documents with `Authorization: Bearer $LIBRARY_API_TOKEN`:
 | `GET /api/courseware/courses`                | Every course, its authors, current and draft version numbers |
 | `GET /api/courseware/courses/{code}/current` | One whole course version (a 404 means there is none)         |
 | `GET /api/courseware/courses/{code}/draft`   | The same for the draft                                       |
-| `GET /api/courseware/catalogue`              | The task tree, frameworks, competencies, references          |
+| `GET /api/courseware/catalogue`              | The task tree, frameworks, competencies, sources             |
 
 Their shapes are the contract in `src/lib/server/cms/types.ts`, copied from the
 payload repo's `src/courseware/document.ts`. When the CMS changes the contract,

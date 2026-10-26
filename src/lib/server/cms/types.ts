@@ -10,7 +10,7 @@
  * - `GET /api/courseware/courses` lists every course with the version numbers it has.
  * - `GET /api/courseware/courses/:code/current` or `/draft` is one whole course version, or a 404
  *   when the course has none.
- * - `GET /api/courseware/catalogue` is the task tree, frameworks, competencies and references,
+ * - `GET /api/courseware/catalogue` is the task tree, frameworks, competencies and sources,
  *   for task and competency pages.
  *
  * Teacher notes and course authors are included. The library decides what each reader sees;
@@ -45,9 +45,11 @@ export type Scenario = {
 	id: string;
 	name: string;
 	airport: string;
-	/** VATUSA's format, such as `IND_GND`. */
-	position: string;
-	difficulty: string;
+	/** VATUSA's format, perhaps with a sector part, such as `IND_GND` or `IND_83_CTR`. */
+	studentPosition: string;
+	/** As `studentPosition`; null when the teacher works no position. */
+	teacherPosition: string | null;
+	difficulty: 'easy' | 'medium' | 'hard' | null;
 	mode: 'live' | 'sim';
 	retired: boolean;
 	practicalTasks: PracticalTask[];
@@ -70,8 +72,27 @@ export type LessonPlan = {
 
 export type Module = { id: string; title: string; description: string; lessonPlans: LessonPlan[] };
 
+export type PositionType = 'DEL' | 'GND' | 'TWR' | 'APP' | 'DEP' | 'CTR' | 'FSS';
+
 export type CourseVersionDocument = {
-	course: { id: string; code: string; title: string; authors: string[] };
+	/** The course, with what a student must do before enrolling and what it involves. */
+	course: {
+		id: string;
+		code: string;
+		title: string;
+		authors: string[];
+		prerequisitesNote: string;
+		/** Hours counted across all the listed position types together; null when none is asked. */
+		consolidation: { hours: number; positionTypes: PositionType[] } | null;
+		/** The rating exam the course ends in. */
+		ratingExam: 'S1' | 'S2' | 'S3' | 'C1' | null;
+		/** The VATUSA Academy exam a student passes before training. */
+		academyExam: 'S2' | 'S3' | 'C1' | null;
+		estimatedWeeks: { min: number; max: number } | null;
+		examOptional: boolean;
+		/** An https link. */
+		moodleUrl: string | null;
+	};
 	version: {
 		id: string;
 		number: number;
@@ -79,7 +100,8 @@ export type CourseVersionDocument = {
 		description: string;
 		/** Minutes. */
 		time: number | null;
-		academyRequired: boolean;
+		/** What a student must do to finish this edition. */
+		completionStandard: string;
 		updatedAt: string;
 	};
 	scale: { id: string; name: string; points: GradePoint[] } | null;
@@ -104,12 +126,13 @@ export type Competency = {
 	pairedGcapCode: string;
 };
 
-export type Reference = {
+/** An outside document tasks cite (decision 0053). */
+export type Source = {
 	id: string;
 	name: string;
 	edition: string;
-	/** A link, or the URL of an Indy document in the public media store. */
-	url: string | null;
+	/** An https link. */
+	url: string;
 };
 
 export type CatalogueTask = {
@@ -124,13 +147,13 @@ export type CatalogueTask = {
 	 * `fromTaskId` is the task the mapping is written on: this task's id, or an ancestor's.
 	 */
 	mappings: { competencyId: string; fromTaskId: string }[];
-	citations: { referenceId: string; section: string }[];
+	citations: { sourceId: string; section: string }[];
 };
 
 export type Catalogue = {
 	frameworks: Framework[];
 	competencies: Competency[];
-	references: Reference[];
+	sources: Source[];
 	/** In tree order: each task follows its parent, siblings in their order. */
 	tasks: CatalogueTask[];
 };

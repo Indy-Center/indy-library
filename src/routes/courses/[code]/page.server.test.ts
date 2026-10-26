@@ -25,7 +25,7 @@ describe('/courses/[code]', () => {
 	it('shows the current version, its modules in order, each with its lesson plans', async () => {
 		const data = await sgc(library());
 
-		expect(data.course).toEqual({ code: 'S-GC', title: 'Ground Control' });
+		expect(data.course).toEqual({ code: 'S-GC', title: 'Ground Control', academyExam: 'S2' });
 		expect(data.version).toMatchObject({ number: 1, isDraft: false, time: 600 });
 		expect(data.modules).toEqual([
 			{
@@ -38,6 +38,17 @@ describe('/courses/[code]', () => {
 				]
 			}
 		]);
+	});
+
+	it("shows the course's VATUSA Academy exam, or none", async () => {
+		const withExam = await sgc(library());
+		const withoutExam = await run(
+			load,
+			library().event(student, '/courses/A-LC', { code: 'A-LC' })
+		);
+
+		expect(withExam.course.academyExam).toBe('S2');
+		expect(withoutExam.course.academyExam).toBeNull();
 	});
 
 	it('sends no teacher notes', async () => {

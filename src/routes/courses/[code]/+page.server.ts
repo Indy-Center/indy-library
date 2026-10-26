@@ -13,12 +13,15 @@ export const load = (async ({ locals, params, url }) => {
 	// Built field by field rather than passed through, so nothing the reader may not see (teacher
 	// notes, authors) reaches the browser by accident.
 	return {
-		course: { code: doc.course.code, title: doc.course.title },
+		course: {
+			code: doc.course.code,
+			title: doc.course.title,
+			academyExam: doc.course.academyExam
+		},
 		version: {
 			...versionOf(doc),
 			description: doc.version.description,
-			time: doc.version.time,
-			academyRequired: doc.version.academyRequired
+			time: doc.version.time
 		},
 		// The draft's number, to link to it from the current version, for those who may see it.
 		draft:

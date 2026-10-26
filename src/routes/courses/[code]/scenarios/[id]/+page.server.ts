@@ -1,5 +1,6 @@
 import {
 	courseVersion,
+	difficultyLabel,
 	findScenario,
 	hasTeacherNotes,
 	maySeeTeacherNotes,
@@ -24,8 +25,8 @@ export const load = (async ({ locals, params, url }) => {
 			id: scenario.id,
 			name: scenario.name,
 			airport: scenario.airport,
-			position: scenario.position,
-			difficulty: scenario.difficulty,
+			position: scenario.studentPosition,
+			difficulty: difficultyLabel(scenario.difficulty),
 			mode: scenario.mode,
 			retired: scenario.retired
 		},
