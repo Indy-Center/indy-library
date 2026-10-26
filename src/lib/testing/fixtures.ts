@@ -27,8 +27,9 @@ const quietAfternoon: Scenario = {
 	id: 'scn-quiet',
 	name: 'A quiet afternoon at Example Field',
 	airport: 'KXMP',
-	position: 'XMP_GND',
-	difficulty: 'Easy',
+	studentPosition: 'XMP_GND',
+	teacherPosition: null,
+	difficulty: 'easy',
 	mode: 'sim',
 	retired: false,
 	practicalTasks: [

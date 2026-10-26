@@ -140,6 +140,13 @@ export function findScenario(
 	return { scenario, offeredBy };
 }
 
+const DIFFICULTIES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as const;
+
+/** A scenario's difficulty as the page shows it: Easy, Medium, Hard, or nothing. */
+export function difficultyLabel(difficulty: Scenario['difficulty']): string {
+	return difficulty ? DIFFICULTIES[difficulty] : '';
+}
+
 /** A task as a link to its page shows it. */
 export function taskRef(task: TaskRef): TaskRef {
 	return { id: task.id, number: task.number, name: task.name };
