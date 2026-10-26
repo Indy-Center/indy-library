@@ -9,7 +9,7 @@ export const load = (async ({ locals, params }) => {
 	const tasks = new Map(catalogue.tasks.map((t) => [t.id, t]));
 	const competencies = new Map(catalogue.competencies.map((c) => [c.id, c]));
 	const frameworks = new Map(catalogue.frameworks.map((f) => [f.id, f]));
-	const references = new Map(catalogue.references.map((r) => [r.id, r]));
+	const sources = new Map(catalogue.sources.map((s) => [s.id, s]));
 
 	const task = tasks.get(params.id);
 	if (!task) error(404, 'There is no such task.');
@@ -37,10 +37,10 @@ export const load = (async ({ locals, params }) => {
 		];
 	});
 
-	const citations = task.citations.flatMap(({ referenceId, section }) => {
-		const reference = references.get(referenceId);
-		if (!reference) return [];
-		return [{ name: reference.name, edition: reference.edition, url: reference.url, section }];
+	const citations = task.citations.flatMap(({ sourceId, section }) => {
+		const source = sources.get(sourceId);
+		if (!source) return [];
+		return [{ name: source.name, edition: source.edition, url: source.url, section }];
 	});
 
 	return {

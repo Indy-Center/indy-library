@@ -52,12 +52,17 @@ describe('/tasks/[id]', () => {
 		expect((await task('task-ground')).mappings[0].inheritedFrom).toBeNull();
 	});
 
-	it('shows the references it cites, with section and link', async () => {
+	it('shows the sources it cites, with section and link', async () => {
 		expect((await task('task-ground')).citations).toEqual([
 			{ name: 'Example Order', edition: 'B', url: 'https://example.com/order', section: '3-7-2' }
 		]);
 		expect((await task('task-taxi-clearance')).citations).toEqual([
-			{ name: 'Example Notes', edition: '2', url: null, section: 'Chapter 4' }
+			{
+				name: 'Example Notes',
+				edition: '2',
+				url: 'https://example.com/notes',
+				section: 'Chapter 4'
+			}
 		]);
 	});
 

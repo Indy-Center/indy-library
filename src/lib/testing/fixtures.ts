@@ -241,9 +241,9 @@ export const catalogue: Catalogue = {
 			pairedGcapCode: ''
 		}
 	],
-	references: [
-		{ id: 'ref-order', name: 'Example Order', edition: 'B', url: 'https://example.com/order' },
-		{ id: 'ref-notes', name: 'Example Notes', edition: '2', url: null }
+	sources: [
+		{ id: 'source-order', name: 'Example Order', edition: 'B', url: 'https://example.com/order' },
+		{ id: 'source-notes', name: 'Example Notes', edition: '2', url: 'https://example.com/notes' }
 	],
 	tasks: [
 		{
@@ -254,7 +254,7 @@ export const catalogue: Catalogue = {
 			parentId: null,
 			retired: false,
 			mappings: [{ competencyId: 'comp-usa-taxi', fromTaskId: 'task-ground' }],
-			citations: [{ referenceId: 'ref-order', section: '3-7-2' }]
+			citations: [{ sourceId: 'source-order', section: '3-7-2' }]
 		},
 		{
 			id: 'task-taxi-clearance',
@@ -267,7 +267,7 @@ export const catalogue: Catalogue = {
 				{ competencyId: 'comp-usa-taxi', fromTaskId: 'task-ground' },
 				{ competencyId: 'comp-gcap-move', fromTaskId: 'task-taxi-clearance' }
 			],
-			citations: [{ referenceId: 'ref-notes', section: 'Chapter 4' }]
+			citations: [{ sourceId: 'source-notes', section: 'Chapter 4' }]
 		},
 		{
 			id: 'task-readback',
