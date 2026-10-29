@@ -8,9 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@indy-center/centerline-svelte':
+        specifier: ^0.1.1
+        version: 0.1.1(@indy-center/centerline-tokens@0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3)))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(svelte@5.57.2)(tailwindcss@4.3.3)
+      '@indy-center/centerline-tokens':
+        specifier: ^0.1.1
+        version: 0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))
       '@indy-center/identity':
         specifier: ^1.0.0
         version: 1.0.0
+      '@mdi/js':
+        specifier: ^7.4.47
+        version: 7.4.47
     devDependencies:
       '@iconify-json/mdi':
         specifier: ^1.2.3
@@ -461,6 +470,25 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@indy-center/centerline-svelte@0.1.1':
+    resolution: {integrity: sha512-0n2ZG+p9FbGmKxD2dqo6JEv+AEfO1ePM6hct6KqLFIdTA59hlWwK6Gg/2MLrsMNY9l4eywEZt8DWPKhqtQyJCQ==}
+    peerDependencies:
+      '@indy-center/centerline-tokens': ^0.1.0
+      '@tailwindcss/typography': ^0.5.0
+      svelte: ^5.20.0
+      tailwindcss: ^4.0.0
+    peerDependenciesMeta:
+      '@tailwindcss/typography':
+        optional: true
+
+  '@indy-center/centerline-tokens@0.1.1':
+    resolution: {integrity: sha512-x+SnwAgG67tl9X63AkXjKyqNvvm439dgqeXWTnaaZLdJ+am2oYMc8T0PHvUdiW6/AqOVS8bP1DVfKSfH5tAI7A==}
+    peerDependencies:
+      '@tailwindcss/typography': ^0.5.0
+    peerDependenciesMeta:
+      '@tailwindcss/typography':
+        optional: true
+
   '@indy-center/identity@1.0.0':
     resolution: {integrity: sha512-vnu4oSgehm+veJ+v0AVVhcTeOWZtUF0vf+cs35EKHEhY1kNDhBxqjw8oCZMWP/1smJ8uoI4Ju/twC/UrphBeew==}
 
@@ -482,6 +510,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@mdi/js@7.4.47':
+    resolution: {integrity: sha512-KPnNOtm5i2pMabqZxpUz7iQf+mfrYZyKCZ8QNz85czgEt7cuHcGorWfdzUMWYA0SD+a6Hn4FmJ+YhzzzjkTZrQ==}
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     resolution: {integrity: sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ==}
@@ -1885,6 +1916,20 @@ snapshots:
   '@img/sharp-win32-x64@0.35.5':
     optional: true
 
+  '@indy-center/centerline-svelte@0.1.1(@indy-center/centerline-tokens@0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3)))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(svelte@5.57.2)(tailwindcss@4.3.3)':
+    dependencies:
+      '@indy-center/centerline-tokens': 0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))
+      '@mdi/js': 7.4.47
+      esm-env: 1.2.2
+      svelte: 5.57.2
+      tailwindcss: 4.3.3
+    optionalDependencies:
+      '@tailwindcss/typography': 0.5.20(tailwindcss@4.3.3)
+
+  '@indy-center/centerline-tokens@0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))':
+    optionalDependencies:
+      '@tailwindcss/typography': 0.5.20(tailwindcss@4.3.3)
+
   '@indy-center/identity@1.0.0':
     dependencies:
       arctic: 3.7.0
@@ -1946,6 +1991,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@mdi/js@7.4.47': {}
 
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
