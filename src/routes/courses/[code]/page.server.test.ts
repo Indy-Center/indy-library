@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FRESH_MS, KEEP_MS } from '$lib/server/cms';
+import { copyKey, FRESH_MS, KEEP_MS, SHAPE_VERSION } from '$lib/server/cms';
 import { sgcCurrent } from '$lib/testing/fixtures';
 import { library, run } from '$lib/testing/library';
 import { session } from '$lib/testing/readers';
@@ -12,6 +12,7 @@ const admin = session('1000003', ['training:admin']);
 const lead = session('1000004', ['training:lead']);
 const CURRENT = '/api/courseware/courses/S-GC/current';
 const DRAFT = '/api/courseware/courses/S-GC/draft';
+const COURSES = '/api/courseware/courses';
 
 function sgcDraft(lib: ReturnType<typeof library>, reader = author) {
 	return run(load, lib.event(reader, '/courses/S-GC?version=draft', { code: 'S-GC' }));
@@ -116,6 +117,40 @@ describe('/courses/[code]', () => {
 			expect((await sgc(lib)).version.number).toBe(1);
 			lib.clock.now += 1;
 			expect((await sgc(lib)).version.number).toBe(2);
+		});
+
+		describe('kept in an older shape', () => {
+			/** Copies of what the page reads, kept before the contract last changed shape. */
+			async function keepOldShape(lib: ReturnType<typeof library>) {
+				const old = (path: string) => copyKey(path, SHAPE_VERSION - 1);
+				await lib.store.put(old(CURRENT), {
+					fetchedAt: lib.clock.now,
+					body: { ...sgcCurrent, course: { ...sgcCurrent.course, title: 'Old shape' } }
+				});
+				await lib.store.put(old(COURSES), {
+					fetchedAt: lib.clock.now,
+					body: lib.cms.documents[COURSES]
+				});
+			}
+
+			it('is not served, even while fresh', async () => {
+				const lib = library();
+				await keepOldShape(lib);
+
+				const data = await sgc(lib);
+
+				expect(data.course.title).toBe('Ground Control');
+				expect(lib.cms.asked(CURRENT)).toBe(1);
+			});
+
+			it('is not served when the CMS fails: with no copy in the new shape, it is a 503', async () => {
+				const lib = library();
+				await keepOldShape(lib);
+				lib.cms.down();
+				lib.clock.now += FRESH_MS * 10;
+
+				await expect(sgc(lib)).rejects.toMatchObject({ status: 503 });
+			});
 		});
 	});
 

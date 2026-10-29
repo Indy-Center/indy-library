@@ -1,7 +1,8 @@
 /**
  * COPIED from the CMS: `Indy-Center/payload`, `src/courseware/document.ts`. That file is the
  * contract; this is its copy. Change it there first, then copy it here, and change the test
- * fixtures (`src/lib/testing/fixtures.ts`) with it. Nothing below is the library's own invention.
+ * fixtures (`src/lib/testing/fixtures.ts`) with it. When a document changes shape, bump
+ * `SHAPE_VERSION` in `./index.ts` as well. Nothing below is the library's own invention.
  *
  * What the CMS serves to the library (and, in release 2, training-tools): the contract.
  *
