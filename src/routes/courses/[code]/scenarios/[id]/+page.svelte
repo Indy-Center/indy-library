@@ -14,7 +14,7 @@
 </script>
 
 <svelte:head>
-	<title>{scenario.name} | Indy Center Library</title>
+	<title>{scenario.name} | Library | Indy Center</title>
 </svelte:head>
 
 <nav class="text-sm text-gray-400">

@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-	<title>Competencies | Indy Center Library</title>
+	<title>Competencies | Library | Indy Center</title>
 </svelte:head>
 
 <h1 class="text-3xl font-bold text-white">Competencies</h1>

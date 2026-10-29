@@ -10,7 +10,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.course.code} {data.course.title} | Indy Center Library</title>
+	<title>{data.course.code} {data.course.title} | Library | Indy Center</title>
 </svelte:head>
 
 <nav class="text-sm text-gray-400">

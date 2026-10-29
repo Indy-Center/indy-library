@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-	<title>{competency.sourceId} {competency.title} | Indy Center Library</title>
+	<title>{competency.sourceId} {competency.title} | Library | Indy Center</title>
 </svelte:head>
 
 <nav class="flex flex-wrap items-baseline gap-x-1 text-sm text-gray-400">
