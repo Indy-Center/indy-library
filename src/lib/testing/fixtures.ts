@@ -27,8 +27,8 @@ const quietAfternoon: Scenario = {
 	id: 'scn-quiet',
 	name: 'A quiet afternoon at Example Field',
 	airport: 'KXMP',
-	studentPosition: 'XMP_GND',
-	teacherPosition: null,
+	studentPosition: { id: 'pos-xmp-gnd', callsign: 'XMP_GND' },
+	teacherPosition: { id: 'pos-xmp-twr', callsign: 'XMP_TWR' },
 	difficulty: 'easy',
 	mode: 'sim',
 	retired: false,
@@ -107,8 +107,9 @@ const noFacts = {
 	ratingExam: null,
 	academyExam: null,
 	estimatedWeeks: null,
-	examOptional: false,
-	moodleUrl: null
+	moodleUrl: null,
+	prerequisites: [],
+	credentialIssued: null
 };
 
 export const sgcCurrent: CourseVersionDocument = {
@@ -122,8 +123,9 @@ export const sgcCurrent: CourseVersionDocument = {
 		ratingExam: 'S1',
 		academyExam: 'S2',
 		estimatedWeeks: { min: 4, max: 8 },
-		examOptional: false,
-		moodleUrl: 'https://moodle.example.com/course/1'
+		moodleUrl: 'https://moodle.example.com/course/1',
+		prerequisites: [{ anyOf: ['X-OBS'] }],
+		credentialIssued: 'S-GC'
 	},
 	version: { id: 'ver-sgc-1', number: 1, ...version },
 	scale: { id: 'scale-1', name: 'Three points', points: POINTS },
@@ -275,6 +277,54 @@ export const catalogue: Catalogue = {
 		{ id: 'source-order', name: 'Example Order', edition: 'B', url: 'https://example.com/order' },
 		{ id: 'source-notes', name: 'Example Notes', edition: '2', url: 'https://example.com/notes' }
 	],
+	credentials: [
+		{
+			id: 'cred-sgc',
+			code: 'S-GC',
+			kind: 'certification',
+			name: 'Made-up ground certification',
+			description: 'Works the ground at made-up fields.',
+			rank: 1,
+			grantedOnArrival: ['S1'],
+			retired: false
+		},
+		{
+			id: 'cred-xobs',
+			code: 'X-OBS',
+			kind: 'endorsement',
+			name: 'Made-up observer endorsement',
+			description: 'Has watched a session.',
+			rank: null,
+			grantedOnArrival: [],
+			retired: false
+		}
+	],
+	positions: [
+		{
+			id: 'pos-xmp-gnd',
+			callsign: 'XMP_GND',
+			name: 'Example Ground',
+			shortName: 'XMP GND',
+			radioName: 'Example Ground',
+			frequency: 121900000,
+			facility: { id: 'XMP', name: 'Example Field ATCT' },
+			starred: true,
+			requiredCredentials: [{ anyOf: ['S-GC'] }],
+			retired: false
+		},
+		{
+			id: 'pos-xmp-twr',
+			callsign: 'XMP_TWR',
+			name: 'Example Tower',
+			shortName: null,
+			radioName: 'Example Tower',
+			frequency: 118300000,
+			facility: { id: 'XMP', name: 'Example Field ATCT' },
+			starred: true,
+			requiredCredentials: [],
+			retired: false
+		}
+	],
 	tasks: [
 		{
 			id: 'task-ground',
@@ -284,7 +334,7 @@ export const catalogue: Catalogue = {
 			parentId: null,
 			retired: false,
 			mappings: [{ competencyId: 'comp-usa-taxi', fromTaskId: 'task-ground' }],
-			citations: [{ sourceId: 'source-order', section: '3-7-2' }]
+			citations: [{ sourceId: 'source-order', place: '3-7-2', title: 'Taxi and ground movement' }]
 		},
 		{
 			id: 'task-taxi-clearance',
@@ -297,7 +347,7 @@ export const catalogue: Catalogue = {
 				{ competencyId: 'comp-usa-taxi', fromTaskId: 'task-ground' },
 				{ competencyId: 'comp-gcap-move', fromTaskId: 'task-taxi-clearance' }
 			],
-			citations: [{ sourceId: 'source-notes', section: 'Chapter 4' }]
+			citations: [{ sourceId: 'source-notes', place: 'Chapter 4', title: null }]
 		},
 		{
 			id: 'task-readback',
