@@ -83,7 +83,8 @@ documents with `Authorization: Bearer $LIBRARY_API_TOKEN`:
 
 Their shapes are the contract in `src/lib/server/cms/types.ts`, copied from the
 payload repo's `src/courseware/document.ts`. When the CMS changes the contract,
-copy it again and change the test fixtures with it.
+copy it again, change the test fixtures with it, and bump the shape version
+(below).
 
 Each document is kept in the Workers Cache API (shared by every isolate in a
 data centre; no KV or D1 to provision):
@@ -98,6 +99,12 @@ data centre; no KV or D1 to provision):
 Copies are filed under an invented host (`indy-library-copies.internal`) so no
 request from outside can ever be served one from Cloudflare's cache. They hold
 teacher notes, which is why they never leave the server.
+
+Copies are also filed under the contract's shape version (`SHAPE_VERSION` in
+`src/lib/server/cms/index.ts`). When the contract changes shape, bump it along
+with the copied types: a copy kept in the old shape is then never read again,
+not even as the fallback, so until the CMS has been read once in the new shape
+a CMS outage is a 503.
 
 ## Bindings, vars and secrets
 

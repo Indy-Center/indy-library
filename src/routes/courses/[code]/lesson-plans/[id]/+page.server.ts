@@ -41,7 +41,7 @@ export const load = (async ({ locals, params, url }) => {
 			id: scenario.id,
 			name: scenario.name,
 			airport: scenario.airport,
-			position: scenario.studentPosition,
+			position: scenario.studentPosition.callsign,
 			difficulty: difficultyLabel(scenario.difficulty),
 			mode: scenario.mode
 		}))

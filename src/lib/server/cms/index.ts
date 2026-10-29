@@ -52,6 +52,19 @@ export const KEEP_MS = 7 * 24 * 60 * 60_000;
 /** How long one request to the CMS may take before the kept copy is served instead. */
 export const CMS_TIMEOUT_MS = 5_000;
 
+/**
+ * The shape of the documents in `./types`. Bump it whenever that contract changes shape: copies
+ * are kept under it, so a copy kept in the old shape is never read again, neither served fresh
+ * nor as the fallback while the CMS fails. Copies kept before there was a shape version are
+ * filed under the bare path, which is shape 1.
+ */
+export const SHAPE_VERSION = 2;
+
+/** Where the copy of the document at `path` is kept. */
+export function copyKey(path: string, shape = SHAPE_VERSION): string {
+	return shape === 1 ? path : `${path}?shape=${shape}`;
+}
+
 export type CmsOptions = {
 	/** The CMS's origin, e.g. `https://cms.flyindycenter.com`. */
 	baseUrl: string;
@@ -73,7 +86,8 @@ export function createCms(options: CmsOptions): Cms {
 		freshMs: number,
 		absentIsNull: boolean
 	): Promise<unknown | null> {
-		const kept = await store.get(path).catch((err) => {
+		const key = copyKey(path);
+		const kept = await store.get(key).catch((err) => {
 			console.error('[indy-library] reading a kept copy failed', path, err);
 			return undefined;
 		});
@@ -90,7 +104,7 @@ export function createCms(options: CmsOptions): Cms {
 			else if (!response.ok) throw new Error(`The CMS answered ${response.status}`);
 			else body = await response.json();
 
-			await store.put(path, { fetchedAt: now(), body }).catch((err) => {
+			await store.put(key, { fetchedAt: now(), body }).catch((err) => {
 				console.error('[indy-library] keeping a copy failed', path, err);
 			});
 			return body;

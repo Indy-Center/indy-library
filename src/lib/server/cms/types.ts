@@ -1,7 +1,8 @@
 /**
  * COPIED from the CMS: `Indy-Center/payload`, `src/courseware/document.ts`. That file is the
  * contract; this is its copy. Change it there first, then copy it here, and change the test
- * fixtures (`src/lib/testing/fixtures.ts`) with it. Nothing below is the library's own invention.
+ * fixtures (`src/lib/testing/fixtures.ts`) with it. When a document changes shape, bump
+ * `SHAPE_VERSION` in `./index.ts` as well. Nothing below is the library's own invention.
  *
  * What the CMS serves to the library (and, in release 2, training-tools): the contract.
  *
@@ -11,7 +12,7 @@
  * - `GET /api/courseware/courses/:code/current` or `/draft` is one whole course version, or a 404
  *   when the course has none.
  * - `GET /api/courseware/catalogue` is the task tree, frameworks, competencies and sources,
- *   for task and competency pages.
+ *   for task and competency pages, and the credentials Indy issues.
  *
  * Teacher notes and course authors are included. The library decides what each reader sees;
  * nothing here is ever sent to a browser as it stands.
@@ -41,14 +42,24 @@ export type TheoryItem = { id: string; task: TaskRef; teacherNotes: string };
 
 export type PracticalTask = { id: string; task: TaskRef; teacherNotes: string; required: boolean };
 
+/**
+ * One of the catalogue's positions as a scenario names it (decision 0060): its vNAS id, to look
+ * it up in the catalogue's `positions`, and its callsign, for VATUSA's record. A position vNAS has
+ * since dropped is still named, and is retired in the catalogue.
+ */
+export type ScenarioPosition = {
+	/** The vNAS id, the catalogue position's `id`. */
+	id: string;
+	/** Such as `IND_83_CTR`. */
+	callsign: string;
+};
+
 export type Scenario = {
 	id: string;
 	name: string;
 	airport: string;
-	/** VATUSA's format, perhaps with a sector part, such as `IND_GND` or `IND_83_CTR`. */
-	studentPosition: string;
-	/** As `studentPosition`; null when the teacher works no position. */
-	teacherPosition: string | null;
+	studentPosition: ScenarioPosition;
+	teacherPosition: ScenarioPosition;
 	difficulty: 'easy' | 'medium' | 'hard' | null;
 	mode: 'live' | 'sim';
 	retired: boolean;
@@ -75,7 +86,7 @@ export type Module = { id: string; title: string; description: string; lessonPla
 export type PositionType = 'DEL' | 'GND' | 'TWR' | 'APP' | 'DEP' | 'CTR' | 'FSS';
 
 export type CourseVersionDocument = {
-	/** The course, with what a student must do before enrolling and what it involves. */
+	/** The course, with what a student must do before enrolling and what it involves (0054). */
 	course: {
 		id: string;
 		code: string;
@@ -84,14 +95,24 @@ export type CourseVersionDocument = {
 		prerequisitesNote: string;
 		/** Hours counted across all the listed position types together; null when none is asked. */
 		consolidation: { hours: number; positionTypes: PositionType[] } | null;
-		/** The rating exam the course ends in. */
+		/** The rating exam the course ends in; null when it ends in none (0059). */
 		ratingExam: 'S1' | 'S2' | 'S3' | 'C1' | null;
 		/** The VATUSA Academy exam a student passes before training. */
 		academyExam: 'S2' | 'S3' | 'C1' | null;
+		/**
+		 * The course's override if set, otherwise worked out from its live edition: one week per
+		 * lesson plan of that edition, and 20% more rounded up (0058). Null with neither.
+		 */
 		estimatedWeeks: { min: number; max: number } | null;
-		examOptional: boolean;
 		/** An https link. */
 		moodleUrl: string | null;
+		/**
+		 * Credential codes a student holds before enrolling. Every row must be met; a row is met by
+		 * holding any one of its credentials. Retired credentials stay named.
+		 */
+		prerequisites: { anyOf: string[] }[];
+		/** The code of the credential finishing the course earns; no other course issues it. */
+		credentialIssued: string | null;
 	};
 	version: {
 		id: string;
@@ -135,6 +156,58 @@ export type Source = {
 	url: string;
 };
 
+/** A VATSIM controller rating that can bring a certification with it on arrival. */
+export type ArrivalRating = 'S1' | 'S2' | 'S3' | 'C1' | 'C3' | 'I1' | 'I3';
+
+/** A certification or endorsement Indy issues (decision 0054). */
+export type Credential = {
+	id: string;
+	/** Such as `S-GC` or `T2-CTR`. */
+	code: string;
+	kind: 'certification' | 'endorsement';
+	name: string;
+	description: string;
+	/** A certification's place on the ladder, higher above lower; null for an endorsement. */
+	rank: number | null;
+	/** The ratings that grant a certification on arrival; empty for an endorsement. */
+	grantedOnArrival: ArrivalRating[];
+	/** No longer issued, though records may still name it. */
+	retired: boolean;
+};
+
+/** One of ZID's positions as the CMS copies it from vNAS Data Admin; design-system's `VnasPosition`. */
+export type CataloguePosition = {
+	/** vNAS's id, the same its live controller feed uses. */
+	id: string;
+	/** Such as `IND_83_CTR`. */
+	callsign: string;
+	/** Such as `Falmouth 83`. */
+	name: string;
+	/**
+	 * As controllers say it, such as `FLM 83`: vNAS's where it has one, else Indy's temporary one
+	 * (`SDF LC`, `CRW N`, or a CMS admin's override); null where there is neither.
+	 */
+	shortName: string | null;
+	/** Such as `Indy Center`. */
+	radioName: string;
+	/** In Hz: 128225000. */
+	frequency: number;
+	/** Such as `{ id: 'SDF', name: 'Louisville ATCT/TRACON' }`. */
+	facility: { id: string; name: string };
+	/** One of its facility's main positions. */
+	starred: boolean;
+	/**
+	 * Credential codes a controller must hold to work it: the CMS admin's override if set, else
+	 * worked out from its type. Every row must be met; a row is met by holding any one of its
+	 * credentials. A certification is also met by any certification ranked higher (`Credential.rank`;
+	 * an A-LC holder meets S-GC and A-GC), but an endorsement counts only when named. No rating is
+	 * stored. Apps apply this; the CMS checks nothing against it.
+	 */
+	requiredCredentials: { anyOf: string[] }[];
+	/** vNAS no longer lists it, though records may still name it. */
+	retired: boolean;
+};
+
 export type CatalogueTask = {
 	id: string;
 	number: string;
@@ -147,13 +220,17 @@ export type CatalogueTask = {
 	 * `fromTaskId` is the task the mapping is written on: this task's id, or an ancestor's.
 	 */
 	mappings: { competencyId: string; fromTaskId: string }[];
-	citations: { sourceId: string; section: string }[];
+	citations: { sourceId: string; place: string; title: string | null }[];
 };
 
 export type Catalogue = {
 	frameworks: Framework[];
 	competencies: Competency[];
 	sources: Source[];
+	/** Certifications by rank, then endorsements by code, retired ones included. */
+	credentials: Credential[];
+	/** ZID's positions by callsign, retired ones included. */
+	positions: CataloguePosition[];
 	/** In tree order: each task follows its parent, siblings in their order. */
 	tasks: CatalogueTask[];
 };

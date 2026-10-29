@@ -86,6 +86,7 @@ export function library(
 	return {
 		cms,
 		training,
+		store,
 		clock,
 		event(reader: SessionContext | null, href: string, params: Record<string, string> = {}) {
 			return {
