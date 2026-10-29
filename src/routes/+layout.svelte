@@ -1,8 +1,13 @@
 <script lang="ts">
 	import '../app.css';
+	import { setColorScheme, setTimeZone } from '@indy-center/centerline-svelte';
 	import Header from '$lib/components/Header.svelte';
 
 	let { children, data } = $props();
+
+	setColorScheme({ fallback: 'dark' });
+	// No saveToProfile: identity holds no time zone yet (identity time-zone 01).
+	setTimeZone(() => data.timeZone);
 </script>
 
 <svelte:head>

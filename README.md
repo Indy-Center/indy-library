@@ -106,6 +106,17 @@ with the copied types: a copy kept in the old shape is then never read again,
 not even as the fallback, so until the CMS has been read once in the new shape
 a CMS outage is a 503.
 
+## Centerline
+
+The look is [Indy Centerline](https://centerline.flyindycenter.com)
+(`@indy-center/centerline-tokens` and `-svelte`), set up in `src/app.css`,
+`src/app.html`, `src/hooks.server.ts` and the root layout. Each reader's light
+or dark choice comes from the `indy-color-scheme` cookie shared across
+`flyindycenter.com`; with none, the page is dark. The time zone is read from
+`indy-time-zone` and not yet saved to identity. Pages carry no `Cache-Control`
+of their own, so `handle` sends `private`: a reader's zone and teacher notes
+never sit in a shared cache.
+
 ## Bindings, vars and secrets
 
 All in `wrangler.jsonc`:
