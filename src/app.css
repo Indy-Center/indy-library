@@ -1,7 +1,8 @@
 @import 'tailwindcss';
+@import '@indy-center/centerline-tokens/tokens.css';
+@import '@indy-center/centerline-tokens/theme.css';
+@import '@indy-center/centerline-tokens/base.css';
+@import '@indy-center/centerline-tokens/fonts.css';
+@source '../node_modules/@indy-center/centerline-svelte';
 @plugin '@tailwindcss/typography';
-
-* {
-	scrollbar-width: thin;
-	scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
-}
+@import '@indy-center/centerline-tokens/prose.css';

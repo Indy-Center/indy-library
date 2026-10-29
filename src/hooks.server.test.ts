@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RequestEvent } from '@sveltejs/kit';
-import { handle } from './hooks.server';
+// @ts-expect-error SvelteKit ships no types for its internal server module.
+import { with_request_store } from '@sveltejs/kit/internal/server';
+import { handle as chainedHandle } from './hooks.server';
 import { session } from '$lib/testing/readers';
 import { AUTHOR_CID } from '$lib/testing/fixtures';
 
@@ -12,6 +14,20 @@ beforeEach(() => {
 afterEach(() => {
 	vi.unstubAllEnvs();
 });
+
+/**
+ * `handle` is a `sequence`, which SvelteKit runs inside a request store; run it in one with
+ * tracing off, as the server does by default.
+ */
+const handle: typeof chainedHandle = (input) => {
+	const event = Object.assign(input.event, {
+		tracing: { enabled: false, root: {}, current: {} }
+	});
+	const state = {
+		tracing: { record_span: ({ fn }: { fn: (span: object) => unknown }) => fn({}) }
+	};
+	return with_request_store({ event, state } as never, () => chainedHandle({ ...input, event }));
+};
 
 function requestTo(href: string, opts: { cookie?: string; signsIn?: boolean } = {}) {
 	const identity = {
@@ -61,6 +77,44 @@ describe('handle', () => {
 		expect(event.locals.session?.user.cid).toBe('1000002');
 		expect(event.locals.cms).toBeDefined();
 		expect(event.locals.teaching).toBeDefined();
+	});
+});
+
+describe('handle, colour scheme and caching', () => {
+	/** Renders `<html>` through whatever `transformPageChunk` the hooks chained onto `resolve`. */
+	async function render(cookie?: string) {
+		const { event } = requestTo('https://library.flyindycenter.com/', {
+			cookie: 'token',
+			signsIn: true
+		});
+		(event.cookies as { get: (name: string) => string | undefined }).get = (name) =>
+			name === 'fic_session' ? 'token' : name === 'indy-color-scheme' ? cookie : undefined;
+		let html = '';
+		const response = await handle({
+			event,
+			resolve: async (_event, opts) => {
+				html = opts?.transformPageChunk
+					? ((await opts.transformPageChunk({
+							html: '<!doctype html><html lang="en"><head></head></html>',
+							done: true
+						})) as string)
+					: '';
+				return new Response(html);
+			}
+		});
+		return { html, response };
+	}
+
+	it('renders data-theme="light" for a reader whose cookie says light', async () => {
+		expect((await render('light')).html).toContain('<html data-theme="light"');
+	});
+
+	it('renders data-theme="dark" for a reader with no cookie', async () => {
+		expect((await render()).html).toContain('<html data-theme="dark"');
+	});
+
+	it('keeps pages out of shared caches', async () => {
+		expect((await render()).response.headers.get('Cache-Control')).toBe('private');
 	});
 });
 
