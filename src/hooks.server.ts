@@ -15,6 +15,14 @@ import { createTeaching } from '$lib/server/teaching';
  * (training-tools, decisions/0004-gate-in-handle-not-layout.md)
  */
 export const handle: Handle = async ({ event, resolve }) => {
+	// The dev preview (README "Local development"). `import.meta.env.DEV` is false in the Worker
+	// build, so this branch and the module it imports are left out of it.
+	if (import.meta.env.DEV && process.env.PREVIEW === '1') {
+		const { previewLocals } = await import('$lib/testing/preview');
+		Object.assign(event.locals, previewLocals(event));
+		return resolve(event);
+	}
+
 	event.locals.session = await getSessionContext(event);
 
 	if (!event.locals.session) {

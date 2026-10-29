@@ -1,7 +1,17 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RequestEvent } from '@sveltejs/kit';
 import { handle } from './hooks.server';
 import { session } from '$lib/testing/readers';
+import { AUTHOR_CID } from '$lib/testing/fixtures';
+
+beforeEach(() => {
+	// A shell that exported PREVIEW must not change what these tests see.
+	vi.stubEnv('PREVIEW', '');
+});
+
+afterEach(() => {
+	vi.unstubAllEnvs();
+});
 
 function requestTo(href: string, opts: { cookie?: string; signsIn?: boolean } = {}) {
 	const identity = {
@@ -51,5 +61,104 @@ describe('handle', () => {
 		expect(event.locals.session?.user.cid).toBe('1000002');
 		expect(event.locals.cms).toBeDefined();
 		expect(event.locals.teaching).toBeDefined();
+	});
+});
+
+/** A request in the dev preview: no identity at all, and a cookie jar `handle` may write to. */
+function previewRequestTo(href: string, jar: Record<string, string> = {}) {
+	const set = vi.fn((name: string, value: string, _options: Record<string, unknown>) => {
+		jar[name] = value;
+	});
+	const event = {
+		url: new URL(href),
+		cookies: { get: (name: string) => jar[name], set },
+		platform: { env: {} },
+		locals: {}
+	} as unknown as RequestEvent;
+	return { event, set, jar };
+}
+
+const ok = () => vi.fn(async () => new Response('ok'));
+
+describe('handle, with PREVIEW=1', () => {
+	beforeEach(() => {
+		vi.stubEnv('PREVIEW', '1');
+	});
+
+	it('still sends a reader with no session to identity outside `vite dev`', async () => {
+		vi.stubEnv('DEV', false);
+		const { event } = requestTo('https://library.flyindycenter.com/?as=admin');
+		const resolve = vi.fn();
+
+		await expect(handle({ event, resolve })).rejects.toMatchObject({ status: 302 });
+		expect(resolve).not.toHaveBeenCalled();
+	});
+
+	describe('under `vite dev`', () => {
+		beforeEach(() => {
+			vi.stubEnv('DEV', true);
+		});
+
+		it('gives ?as=admin a Training Admin session, and remembers the pick in a cookie', async () => {
+			const { event, set } = previewRequestTo('http://localhost:5173/?as=admin');
+			const resolve = ok();
+
+			await handle({ event, resolve });
+
+			expect(resolve).toHaveBeenCalled();
+			expect(event.locals.session?.roles).toContain('training:admin');
+			expect(set).toHaveBeenCalledWith(
+				'library_preview_as',
+				'admin',
+				expect.objectContaining({ path: '/' })
+			);
+			// A session cookie: it lasts the browser session.
+			const options = set.mock.calls[0][2];
+			expect(options.maxAge).toBeUndefined();
+			expect(options.expires).toBeUndefined();
+		});
+
+		it('keeps the reader the cookie remembers, on a page without ?as=', async () => {
+			const { event, set } = previewRequestTo('http://localhost:5173/courses/S-GC', {
+				library_preview_as: 'author'
+			});
+
+			await handle({ event, resolve: ok() });
+
+			expect(event.locals.session?.user.cid).toBe(AUTHOR_CID);
+			expect(set).not.toHaveBeenCalled();
+		});
+
+		it('is the student with neither ?as= nor the cookie', async () => {
+			const { event } = previewRequestTo('http://localhost:5173/');
+
+			await handle({ event, resolve: ok() });
+
+			expect(event.locals.session?.roles).toEqual([]);
+			expect(await event.locals.teaching.coursesTaught(event.locals.session!.user.cid)).toEqual([]);
+		});
+
+		it('falls back to the student on an unknown ?as=, naming the readers there are', async () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+			const { event, jar } = previewRequestTo('http://localhost:5173/?as=nobody');
+
+			await handle({ event, resolve: ok() });
+
+			expect(event.locals.session?.roles).toEqual([]);
+			expect(jar.library_preview_as).toBe('student');
+			expect(warn).toHaveBeenCalledWith(expect.stringContaining('student, teacher, author, admin'));
+			warn.mockRestore();
+		});
+
+		it('gives the teacher S-GC to teach, and the CMS the fixtures', async () => {
+			const { event } = previewRequestTo('http://localhost:5173/?as=teacher');
+
+			await handle({ event, resolve: ok() });
+
+			const cid = event.locals.session!.user.cid;
+			expect(await event.locals.teaching.coursesTaught(cid)).toEqual(['S-GC']);
+			const { courses } = await event.locals.cms.courseList();
+			expect(courses.map((c) => c.code)).toEqual(['S-GC', 'A-LC', 'X-NEW']);
+		});
 	});
 });

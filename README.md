@@ -141,6 +141,29 @@ there is no Cache API in dev, copies are kept in memory instead.
 
 `.dev.vars` is read at startup only; restart after editing it.
 
+### Preview
+
+```bash
+PREVIEW=1 pnpm dev               # http://localhost:5173/?as=admin
+```
+
+Serves every page with no identity, CMS or training-tools running. It shows the
+test fixtures (`src/lib/testing/fixtures.ts`), not the CMS's courseware. Pick
+the reader with `?as=<name>` on any page; the pick is kept in a
+`library_preview_as` cookie until the browser closes, and without either you are
+`student`:
+
+| `?as=`    | Reader                                                       |
+| --------- | ------------------------------------------------------------ |
+| `student` | No roles, teaches nothing                                    |
+| `teacher` | Teaches S-GC, the fixtures' course with teacher notes        |
+| `author`  | An author of S-GC and X-NEW in the fixtures, teaches nothing |
+| `admin`   | The Training Admin (`training:admin`)                        |
+
+An unknown name shows `student` and logs the names there are. `PREVIEW` is read
+from the shell (`process.env`), not `.dev.vars`. The preview only runs under
+`vite dev`: the Worker build leaves it out and always needs a real session.
+
 ## Checks and tests
 
 ```bash
