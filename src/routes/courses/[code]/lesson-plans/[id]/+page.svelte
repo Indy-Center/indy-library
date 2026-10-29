@@ -17,7 +17,7 @@
 </script>
 
 <svelte:head>
-	<title>{lp.code} {lp.title} | Indy Center Library</title>
+	<title>{lp.code} {lp.title} | Library | Indy Center</title>
 </svelte:head>
 
 <nav class="text-sm text-gray-400">

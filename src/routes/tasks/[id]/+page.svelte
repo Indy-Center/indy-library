@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-	<title>{data.task.number} {data.task.name} | Indy Center Library</title>
+	<title>{data.task.number} {data.task.name} | Library | Indy Center</title>
 </svelte:head>
 
 <nav class="flex flex-wrap items-baseline gap-x-1 text-sm text-gray-400" aria-label="Task tree">

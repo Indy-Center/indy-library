@@ -1,41 +1,74 @@
 <script lang="ts">
 	import '../app.css';
-	import { setColorScheme, setTimeZone } from '@indy-center/centerline-svelte';
-	import Header from '$lib/components/Header.svelte';
+	import { page } from '$app/state';
+	import {
+		Footer,
+		Header,
+		INDY_CENTER_APPS,
+		setColorScheme,
+		setTimeZone,
+		type FooterColumn,
+		type NavItem
+	} from '@indy-center/centerline-svelte';
+	import { mdiBookOpenVariant, mdiFormatListChecks } from '@mdi/js';
+	import { loginUrl, logoutUrl } from '$lib/identity-links';
 
 	let { children, data } = $props();
 
 	setColorScheme({ fallback: 'dark' });
 	// No saveToProfile: identity holds no time zone yet (identity time-zone 01).
 	setTimeZone(() => data.timeZone);
+
+	const app = INDY_CENTER_APPS.find((app) => app.label === 'Library');
+
+	const nav: NavItem[] = [
+		{ label: 'Courses', href: '/', icon: mdiBookOpenVariant },
+		{ label: 'Competencies', href: '/competencies', icon: mdiFormatListChecks }
+	];
+
+	const columns: FooterColumn[] = [
+		{
+			heading: 'Library',
+			links: [
+				{ href: '/', label: 'Courses' },
+				{ href: '/competencies', label: 'Competencies' }
+			]
+		},
+		{
+			heading: 'Indy Center',
+			links: [
+				{ href: 'https://flyindycenter.com', label: 'Indy Center' },
+				{ href: 'https://training.flyindycenter.com', label: 'Training' }
+			]
+		}
+	];
+
+	const isUnder = (path: string, section: string) =>
+		path === section || path.startsWith(`${section}/`);
+
+	// The nav marks the link a path is under, and "/" only on itself; a course's pages and the
+	// tasks they teach belong to Courses, so they are marked as "/".
+	let current = $derived(
+		isUnder(page.url.pathname, '/courses') || isUnder(page.url.pathname, '/tasks')
+			? '/'
+			: page.url.pathname
+	);
+
+	// Absolute URL: identity rejects bare paths, and page.url.href is right during SSR.
+	let signInHref = $derived(loginUrl(data.identityUrl, page.url.href));
+	let signOutHref = $derived(logoutUrl(data.identityUrl, page.url.href));
 </script>
 
 <svelte:head>
-	<title>Indy Center | Library</title>
+	<title>Library | Indy Center</title>
 </svelte:head>
 
-<div class="flex min-h-screen w-full flex-col bg-gray-900">
-	<div
-		class="absolute top-0 z-20 w-full border-b border-slate-700/50 bg-slate-800/95 backdrop-blur-lg"
-	>
-		<Header reader={data.reader} identityUrl={data.identityUrl} />
-	</div>
-	<main class="flex w-full flex-1 flex-col">
-		<div class="w-full bg-gray-900 pt-16">
-			<div class="mx-auto max-w-6xl px-4 py-8">
-				{@render children?.()}
-			</div>
+<div class="flex min-h-screen flex-col">
+	<Header {app} {nav} {current} member={data.member} {signInHref} {signOutHref} />
+	<main id="main" class="flex-1">
+		<div class="mx-auto max-w-6xl px-4 py-8">
+			{@render children?.()}
 		</div>
 	</main>
-	<footer class="flex shrink-0 items-center justify-center bg-gray-900 py-3">
-		<div class="mx-auto max-w-6xl px-4 text-center">
-			<p class="mb-1 text-xs leading-tight text-gray-400">
-				This site is not affiliated with the Federal Aviation Administration or any governing
-				aviation body. All content contained herein is approved only for use on the VATSIM network.
-			</p>
-			<p class="text-xs leading-tight text-gray-500">
-				Copyright {new Date().getFullYear()} Indy Center
-			</p>
-		</div>
-	</footer>
+	<Footer {columns} />
 </div>
