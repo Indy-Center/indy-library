@@ -26,7 +26,7 @@ describe('/courses/[code]', () => {
 	it('shows the current version, its modules in order, each with its lesson plans', async () => {
 		const data = await sgc(library());
 
-		expect(data.course).toEqual({ code: 'S-GC', title: 'Ground Control', academyExam: 'S2' });
+		expect(data.course).toEqual({ code: 'S-GC', title: 'Ground Control' });
 		expect(data.version).toMatchObject({ number: 1, isDraft: false, time: 600 });
 		expect(data.modules).toEqual([
 			{
@@ -48,8 +48,8 @@ describe('/courses/[code]', () => {
 			library().event(student, '/courses/A-LC', { code: 'A-LC' })
 		);
 
-		expect(withExam.course.academyExam).toBe('S2');
-		expect(withoutExam.course.academyExam).toBeNull();
+		expect(withExam.facts.academyExam).toBe('S2');
+		expect(withoutExam.facts.academyExam).toBeNull();
 	});
 
 	it('sends no teacher notes', async () => {

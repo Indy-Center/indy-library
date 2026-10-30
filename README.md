@@ -18,15 +18,15 @@ and conventions as [training-tools](https://github.com/Indy-Center/training-tool
 
 Every page needs a session; there are no public pages.
 
-| Route                               | Shows                                                                                                              |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `/`                                 | Every course with a current version, plus drafts the reader may see                                                |
-| `/courses/{code}`                   | The current edition: what to hold to enrol and what finishing earns, then modules in order with their lesson plans |
-| `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered                               |
-| `/courses/{code}/scenarios/{id}`    | Airport, position, difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it   |
-| `/tasks/{id}`                       | Number, name, description, place in the task tree, mapped competencies (inherited too), cited sources              |
-| `/competencies`                     | A tab per framework edition (`?edition=`), each top-level competency folded over everything beneath it             |
-| `/competencies/{id}`                | Text, framework edition, rubric wording, and every task mapped to it                                               |
+| Route                               | Shows                                                                                                                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`                                 | Every course with a current version, plus drafts the reader may see                                                                                                                        |
+| `/courses/{code}`                   | The current edition: its facts (enrolment, Academy exam, length, consolidation, rating exam, credential earned, Moodle), modules in order with their lesson plans, the completion standard |
+| `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered                                                                                                       |
+| `/courses/{code}/scenarios/{id}`    | Airport, position, difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it                                                                           |
+| `/tasks/{id}`                       | Number, name, description, place in the task tree, mapped competencies (inherited too), cited sources                                                                                      |
+| `/competencies`                     | A tab per framework edition (`?edition=`), each top-level competency folded over everything beneath it                                                                                     |
+| `/competencies/{id}`                | Text, framework edition, rubric wording, and every task mapped to it                                                                                                                       |
 
 Add `?version=draft` to any `/courses/...` page to read the course's draft
 instead. Pages beneath a draft keep it in their links, and every draft page is
