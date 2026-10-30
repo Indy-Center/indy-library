@@ -381,6 +381,34 @@ export const catalogue: Catalogue = {
 			retired: false,
 			mappings: [],
 			citations: []
+		},
+		// Task page cases (library-centerline 12). Nothing here is mapped, so the competency
+		// pages' lists are unchanged. `task-readback` gives the browser check ancestors, a child
+		// (task-cited) and inherited mappings; `task-cited` has three citations: with a title,
+		// without one, and with a blank place.
+		{
+			id: 'task-cited',
+			number: '1.1.1.1',
+			name: 'Confirm the hold short',
+			description: 'Line one of the description.\nLine two, after a break.',
+			parentId: 'task-readback',
+			retired: false,
+			mappings: [],
+			citations: [
+				{ sourceId: 'source-order', place: '3-7-2', title: 'Taxi and ground movement' },
+				{ sourceId: 'source-notes', place: 'Chapter 4', title: null },
+				{ sourceId: 'source-order', place: '', title: 'Whole-document overview' }
+			]
+		},
+		{
+			id: 'task-retired',
+			number: '3',
+			name: 'Issue a paper strip',
+			description: '',
+			parentId: null,
+			retired: true,
+			mappings: [],
+			citations: []
 		}
 	]
 };

@@ -24,7 +24,7 @@ Every page needs a session; there are no public pages.
 | `/courses/{code}`                   | The current version: modules in order, each with its lesson plans                                                |
 | `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered                             |
 | `/courses/{code}/scenarios/{id}`    | Airport, position, difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it |
-| `/tasks/{id}`                       | Number, name, description, place in the task tree, mapped competencies (inherited too), cited references         |
+| `/tasks/{id}`                       | Number, name, description, place in the task tree, mapped competencies (inherited too), cited sources            |
 | `/competencies`                     | A tab per framework edition (`?edition=`), each top-level competency folded over everything beneath it           |
 | `/competencies/{id}`                | Text, framework edition, rubric wording, and every task mapped to it                                             |
 

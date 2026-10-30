@@ -52,18 +52,45 @@ describe('/tasks/[id]', () => {
 		expect((await task('task-ground')).mappings[0].inheritedFrom).toBeNull();
 	});
 
-	it('shows the sources it cites, with section and link', async () => {
+	it('shows a citation with a title: its place and title with the source', async () => {
 		expect((await task('task-ground')).citations).toEqual([
-			{ name: 'Example Order', edition: 'B', url: 'https://example.com/order', section: '3-7-2' }
+			{
+				name: 'Example Order',
+				edition: 'B',
+				url: 'https://example.com/order',
+				place: '3-7-2',
+				title: 'Taxi and ground movement'
+			}
 		]);
+	});
+
+	it('shows a citation without a title, its title null', async () => {
 		expect((await task('task-taxi-clearance')).citations).toEqual([
 			{
 				name: 'Example Notes',
 				edition: '2',
 				url: 'https://example.com/notes',
-				section: 'Chapter 4'
+				place: 'Chapter 4',
+				title: null
 			}
 		]);
+	});
+
+	it('keeps a citation whose place is blank, the place an empty string', async () => {
+		const { citations } = await task('task-cited');
+
+		expect(citations).toHaveLength(3);
+		expect(citations[2]).toEqual({
+			name: 'Example Order',
+			edition: 'B',
+			url: 'https://example.com/order',
+			place: '',
+			title: 'Whole-document overview'
+		});
+	});
+
+	it('marks a retired task', async () => {
+		expect((await task('task-retired')).task.retired).toBe(true);
 	});
 
 	it('is a 404 for a task that does not exist', async () => {
