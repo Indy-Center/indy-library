@@ -124,7 +124,9 @@ export const sgcCurrent: CourseVersionDocument = {
 		academyExam: 'S2',
 		estimatedWeeks: { min: 4, max: 8 },
 		moodleUrl: 'https://moodle.example.com/course/1',
-		prerequisites: [{ anyOf: ['X-OBS'] }],
+		// Ticket 07: two rows. The first is "one of two" (the second is retired); the second row's
+		// code is not in the catalogue.
+		prerequisites: [{ anyOf: ['X-OBS', 'X-OLD'] }, { anyOf: ['X-GONE'] }],
 		credentialIssued: 'S-GC'
 	},
 	version: { id: 'ver-sgc-1', number: 1, ...version },
@@ -321,6 +323,17 @@ export const catalogue: Catalogue = {
 			rank: null,
 			grantedOnArrival: [],
 			retired: false
+		},
+		// Ticket 07: a retired credential.
+		{
+			id: 'cred-xold',
+			code: 'X-OLD',
+			kind: 'endorsement',
+			name: 'Made-up retired endorsement',
+			description: 'No longer issued.',
+			rank: null,
+			grantedOnArrival: [],
+			retired: true
 		}
 	],
 	positions: [
