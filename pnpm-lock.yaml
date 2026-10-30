@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@indy-center/centerline-svelte':
-        specifier: ^0.1.1
-        version: 0.1.1(@indy-center/centerline-tokens@0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3)))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(svelte@5.57.2)(tailwindcss@4.3.3)
+        specifier: ^0.2.0
+        version: 0.2.0(@indy-center/centerline-tokens@0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3)))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(svelte@5.57.2)(tailwindcss@4.3.3)
       '@indy-center/centerline-tokens':
         specifier: ^0.1.1
         version: 0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))
@@ -449,8 +449,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@indy-center/centerline-svelte@0.1.1':
-    resolution: {integrity: sha512-0n2ZG+p9FbGmKxD2dqo6JEv+AEfO1ePM6hct6KqLFIdTA59hlWwK6Gg/2MLrsMNY9l4eywEZt8DWPKhqtQyJCQ==}
+  '@indy-center/centerline-svelte@0.2.0':
+    resolution: {integrity: sha512-VcFAHG1Lakc37PjYW9pEQ6zOaZTv1Z3eE39z3MWJ9UrePo3AjrEPqwCgJ4HXth/t+ITNGuYtSXlHW0BbozFWiQ==}
     peerDependencies:
       '@indy-center/centerline-tokens': ^0.1.0
       '@tailwindcss/typography': ^0.5.0
@@ -1809,7 +1809,7 @@ snapshots:
   '@img/sharp-win32-x64@0.35.5':
     optional: true
 
-  '@indy-center/centerline-svelte@0.1.1(@indy-center/centerline-tokens@0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3)))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(svelte@5.57.2)(tailwindcss@4.3.3)':
+  '@indy-center/centerline-svelte@0.2.0(@indy-center/centerline-tokens@0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3)))(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))(svelte@5.57.2)(tailwindcss@4.3.3)':
     dependencies:
       '@indy-center/centerline-tokens': 0.1.1(@tailwindcss/typography@0.5.20(tailwindcss@4.3.3))
       '@mdi/js': 7.4.47
