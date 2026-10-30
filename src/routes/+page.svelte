@@ -1,5 +1,13 @@
 <script lang="ts">
-	import IconSchool from '~icons/mdi/school';
+	import {
+		Badge,
+		Card,
+		EmptyState,
+		Heading,
+		Icon,
+		PageHeader
+	} from '@indy-center/centerline-svelte';
+	import { mdiSchool } from '@mdi/js';
 
 	let { data } = $props();
 </script>
@@ -8,33 +16,35 @@
 	<title>Library | Indy Center</title>
 </svelte:head>
 
-<h1 class="text-3xl font-bold text-white">Courses</h1>
-<p class="mt-2 text-gray-400">The current version of every Indy Center course.</p>
+<PageHeader title="Courses">The current edition of every Indy Center course.</PageHeader>
 
 {#if data.courses.length === 0}
-	<p class="mt-8 text-gray-400">No course has been published yet.</p>
+	<EmptyState title="No courses yet" level={2} class="mt-8">
+		No course has been published yet.
+	</EmptyState>
 {:else}
 	<ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 		{#each data.courses as course (course.code)}
-			<li>
+			<Card as="li">
+				<!-- The link fills the card (negative margin cancels its padding), so its focus ring reaches the card's edges. -->
 				<a
 					href={course.hasCurrent
 						? `/courses/${course.code}`
 						: `/courses/${course.code}?version=draft`}
-					class="block h-full rounded-lg border border-slate-700/60 bg-slate-800/60 p-5 transition-colors duration-200 hover:border-sky-500/50 hover:bg-slate-700/60"
+					class="-m-4 block h-[calc(100%+2rem)] rounded-lg p-4 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
 				>
-					<div class="flex items-center gap-2 font-mono text-sm text-sky-300">
-						<IconSchool class="h-4 w-4" aria-hidden="true" />
+					<div class="flex items-center gap-2 font-mono text-sm">
+						<Icon path={mdiSchool} />
 						{course.code}
 					</div>
-					<div class="mt-2 text-lg font-semibold text-white">{course.title}</div>
+					<Heading level={2} look={3} class="mt-2">{course.title}</Heading>
 					{#if course.draft !== null}
-						<div class="mt-3 text-xs font-medium text-yellow-300">
-							{course.hasCurrent ? `Draft version ${course.draft} in progress` : 'Draft only'}
-						</div>
+						<Badge variant="yellow" pill size="sm" class="mt-3">
+							{course.hasCurrent ? `Draft edition ${course.draft} in progress` : 'Draft only'}
+						</Badge>
 					{/if}
 				</a>
-			</li>
+			</Card>
 		{/each}
 	</ul>
 {/if}
