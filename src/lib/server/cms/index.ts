@@ -20,7 +20,11 @@ export type Cms = {
 	 * only for a reader who may see it: drafts are fetched for nobody else.
 	 */
 	courseVersion(code: string, which: 'current' | 'draft'): Promise<CourseVersionDocument | null>;
-	/** The task tree, frameworks, competencies and sources. */
+	/**
+	 * The task tree, frameworks, competencies, sources, credentials and positions. Read at most
+	 * once by each client, and `handle` makes one per request: every caller in a request shares
+	 * the one read, failure included.
+	 */
 	catalogue(): Promise<Catalogue>;
 };
 
@@ -80,6 +84,9 @@ export function createCms(options: CmsOptions): Cms {
 	const { baseUrl, token, store } = options;
 	const now = options.now ?? Date.now;
 	const timeoutMs = options.timeoutMs ?? CMS_TIMEOUT_MS;
+	// The root layout reads the catalogue for its positions on every page, alongside the page's
+	// own load, so the first read is shared: once per client, which is once per request.
+	let catalogueRead: Promise<Catalogue> | undefined;
 
 	async function read(
 		path: string,
@@ -126,8 +133,9 @@ export function createCms(options: CmsOptions): Cms {
 			const freshMs = which === 'draft' ? DRAFT_FRESH_MS : FRESH_MS;
 			return (await read(path, freshMs, true)) as CourseVersionDocument | null;
 		},
-		async catalogue() {
-			return (await read('/api/courseware/catalogue', FRESH_MS, false)) as Catalogue;
+		catalogue() {
+			catalogueRead ??= read('/api/courseware/catalogue', FRESH_MS, false) as Promise<Catalogue>;
+			return catalogueRead;
 		}
 	};
 }
