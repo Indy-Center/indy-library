@@ -101,7 +101,6 @@ describe('/courses/[code] facts', () => {
 		const draft = await page('/courses/S-GC?version=draft', 'S-GC', session(AUTHOR_CID));
 
 		expect(draft.version.isDraft).toBe(true);
-		expect(draft.facts.prerequisites).toEqual(current.facts.prerequisites);
-		expect(draft.facts.issues).toEqual(current.facts.issues);
+		expect(draft.facts).toEqual(current.facts);
 	});
 });
