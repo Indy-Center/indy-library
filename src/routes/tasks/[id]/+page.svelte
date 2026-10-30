@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Section from '$lib/components/Section.svelte';
+	import { Badge, Panel } from '@indy-center/centerline-svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 	import IconLink from '~icons/mdi/open-in-new';
 
@@ -25,11 +25,7 @@
 	<div class="flex items-center gap-3">
 		<span class="font-mono text-sm text-sky-300">Task {data.task.number}</span>
 		{#if data.task.retired}
-			<span
-				class="rounded-lg border border-gray-500/30 bg-gray-500/10 px-2 py-0.5 text-xs text-gray-300"
-			>
-				Retired
-			</span>
+			<Badge size="sm" variant="gray">Retired</Badge>
 		{/if}
 	</div>
 	<h1 class="text-3xl font-bold text-white">{data.task.name}</h1>
@@ -39,16 +35,16 @@
 </header>
 
 {#if data.children.length > 0}
-	<Section title="Tasks beneath this one">
+	<Panel title="Tasks beneath this one" level={2} flush class="mt-8">
 		<ul class="divide-y divide-slate-700/60">
 			{#each data.children as child (child.id)}
 				<li class="px-5 py-3"><TaskLink task={child} /></li>
 			{/each}
 		</ul>
-	</Section>
+	</Panel>
 {/if}
 
-<Section title="Competencies">
+<Panel title="Competencies" level={2} flush class="mt-8">
 	{#if data.mappings.length === 0}
 		<p class="px-5 py-4 text-sm text-gray-400">This task is not mapped to a competency yet.</p>
 	{:else}
@@ -78,10 +74,10 @@
 			{/each}
 		</ul>
 	{/if}
-</Section>
+</Panel>
 
 {#if data.citations.length > 0}
-	<Section title="References">
+	<Panel title="References" level={2} flush class="mt-8">
 		<ul class="divide-y divide-slate-700/60">
 			{#each data.citations as citation, i (i)}
 				<li class="flex flex-wrap items-baseline gap-x-3 px-5 py-3">
@@ -105,5 +101,5 @@
 				</li>
 			{/each}
 		</ul>
-	</Section>
+	</Panel>
 {/if}
