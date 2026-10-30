@@ -41,7 +41,7 @@
 	<title>{competency.sourceId} {competency.title} | Library | Indy Center</title>
 </svelte:head>
 
-<Breadcrumbs items={trail} label="Competency tree" class="mb-4" />
+<Breadcrumbs items={trail} class="mb-4" />
 
 <div class="font-mono text-sm">{competency.sourceId}</div>
 
