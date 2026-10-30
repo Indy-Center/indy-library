@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { ErrorPage } from '@indy-center/centerline-svelte';
-	import { mdiBookOpenVariant, mdiFormatListChecks } from '@mdi/js';
+	import { SECTIONS } from '$lib/nav';
 </script>
 
 <svelte:head>
@@ -12,8 +12,5 @@
 	status={page.status}
 	message={page.error?.message}
 	path={page.url.pathname}
-	links={[
-		{ label: 'Courses', href: '/', icon: mdiBookOpenVariant },
-		{ label: 'Competencies', href: '/competencies', icon: mdiFormatListChecks }
-	]}
+	links={SECTIONS}
 />

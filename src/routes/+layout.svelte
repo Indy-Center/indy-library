@@ -8,11 +8,10 @@
 		setColorScheme,
 		setPositions,
 		setTimeZone,
-		type FooterColumn,
-		type NavItem
+		type FooterColumn
 	} from '@indy-center/centerline-svelte';
-	import { mdiBookOpenVariant, mdiFormatListChecks } from '@mdi/js';
 	import { loginUrl, logoutUrl } from '$lib/identity-links';
+	import { SECTIONS } from '$lib/nav';
 
 	let { children, data } = $props();
 
@@ -24,19 +23,8 @@
 
 	const app = INDY_CENTER_APPS.find((app) => app.label === 'Library');
 
-	const nav: NavItem[] = [
-		{ label: 'Courses', href: '/', icon: mdiBookOpenVariant },
-		{ label: 'Competencies', href: '/competencies', icon: mdiFormatListChecks }
-	];
-
 	const columns: FooterColumn[] = [
-		{
-			heading: 'Library',
-			links: [
-				{ href: '/', label: 'Courses' },
-				{ href: '/competencies', label: 'Competencies' }
-			]
-		},
+		{ heading: 'Library', links: SECTIONS.map(({ href, label }) => ({ href, label })) },
 		{
 			heading: 'Indy Center',
 			links: [
@@ -67,7 +55,7 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col">
-	<Header {app} {nav} {current} member={data.member} {signInHref} {signOutHref} />
+	<Header {app} nav={SECTIONS} {current} member={data.member} {signInHref} {signOutHref} />
 	<main id="main" class="flex-1">
 		<div class="mx-auto max-w-6xl px-4 py-8">
 			{@render children?.()}
