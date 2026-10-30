@@ -46,8 +46,8 @@ export const load = (async ({ locals, params, url }) => {
 			ratingExam: doc.course.ratingExam,
 			moodleUrl: doc.course.moodleUrl,
 			prerequisites: doc.course.prerequisites.map((row) => row.anyOf.map(credential)),
-			note: doc.course.prerequisitesNote.trim() ? doc.course.prerequisitesNote : null,
-			issues: doc.course.credentialIssued ? credential(doc.course.credentialIssued) : null
+			prerequisitesNote: doc.course.prerequisitesNote.trim() ? doc.course.prerequisitesNote : null,
+			credentialIssued: doc.course.credentialIssued ? credential(doc.course.credentialIssued) : null
 		},
 		// The draft's number, to link to it from the current version, for those who may see it.
 		draft:

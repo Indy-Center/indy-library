@@ -1,6 +1,5 @@
 <script lang="ts">
 	import {
-		Badge,
 		Breadcrumbs,
 		DescriptionList,
 		EmptyState,
@@ -8,6 +7,8 @@
 		Panel,
 		Text
 	} from '@indy-center/centerline-svelte';
+	import Retired from '$lib/components/Retired.svelte';
+	import RowLink from '$lib/components/RowLink.svelte';
 
 	let { data } = $props();
 	let competency = $derived(data.competency);
@@ -33,8 +34,7 @@
 		}
 	]);
 
-	const rowLink =
-		'flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring';
+	const rowLayout = 'flex-wrap justify-between gap-x-4 gap-y-1 px-4 py-3';
 </script>
 
 <svelte:head>
@@ -45,12 +45,10 @@
 
 <div class="font-mono text-sm">{competency.sourceId}</div>
 
+<PageHeader title={competency.title} />
+<!-- Not PageHeader's lead line: the wording runs to several lines, as written. -->
 {#if competency.text}
-	<PageHeader title={competency.title}>
-		<span class="whitespace-pre-line">{competency.text}</span>
-	</PageHeader>
-{:else}
-	<PageHeader title={competency.title} />
+	<p class="mt-4 max-w-3xl whitespace-pre-line">{competency.text}</p>
 {/if}
 
 {#if competency.sourceReference || competency.pairedGcapCode}
@@ -94,12 +92,12 @@
 		<ul class="divide-y divide-border">
 			{#each data.children as child (child.id)}
 				<li>
-					<a href="/competencies/{child.id}" class={rowLink}>
+					<RowLink href="/competencies/{child.id}" class={rowLayout}>
 						<span class="flex items-baseline gap-2">
 							<span class="font-mono text-sm">{child.sourceId}</span>
 							<span>{child.title}</span>
 						</span>
-					</a>
+					</RowLink>
 				</li>
 			{/each}
 		</ul>
@@ -115,20 +113,20 @@
 		<ul class="divide-y divide-border">
 			{#each data.tasks as mapped (mapped.task.id)}
 				<li>
-					<a href="/tasks/{mapped.task.id}" class={rowLink}>
+					<RowLink href="/tasks/{mapped.task.id}" class={rowLayout}>
 						<span class="flex items-baseline gap-2">
 							<span class="font-mono text-sm">{mapped.task.number}</span>
 							<span>{mapped.task.name}</span>
 						</span>
 						{#if mapped.retired || mapped.inheritedFrom}
 							<span class="flex items-baseline gap-2">
-								{#if mapped.retired}<Badge size="sm" variant="gray" pill>Retired</Badge>{/if}
+								{#if mapped.retired}<Retired />{/if}
 								{#if mapped.inheritedFrom}
 									<Text as="span" size="small">Through {mapped.inheritedFrom.number}</Text>
 								{/if}
 							</span>
 						{/if}
-					</a>
+					</RowLink>
 				</li>
 			{/each}
 		</ul>

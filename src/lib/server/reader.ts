@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { SessionContext } from '@indy-center/identity';
 import { CmsUnavailableError } from '$lib/server/cms';
 import { isTrainingStaff } from '$lib/permissions';
+import type { ShownPosition } from '$lib/positions';
 import type {
 	CataloguePosition,
 	CourseSummary,
@@ -168,14 +169,10 @@ export async function cataloguePositions(locals: App.Locals): Promise<CatalogueP
 }
 
 /**
- * A scenario's position as the page hands it to `Position`: the vNAS id (its `positionId`) and
- * callsign the scenario names, and whether the catalogue marks it retired. A position the
- * catalogue lacks is not retired; `Position` shows its callsign alone.
+ * Makes the function that turns a scenario's position into what the page shows, marked retired
+ * from the catalogue's positions.
  */
-export type ShownPosition = ScenarioPosition & { retired: boolean };
-
-/** Turns a scenario's positions into what the page shows, looked up in the catalogue's. */
-export async function positionsShown(
+export async function makeShownPosition(
 	locals: App.Locals
 ): Promise<(position: ScenarioPosition) => ShownPosition> {
 	const retired = new Set(

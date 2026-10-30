@@ -6,19 +6,16 @@
 		DescriptionList,
 		EmptyState,
 		PageHeader,
-		Panel,
-		Position,
-		Text
+		Panel
 	} from '@indy-center/centerline-svelte';
 	import ModeBadge from '$lib/components/ModeBadge.svelte';
+	import Retired from '$lib/components/Retired.svelte';
+	import RowLink from '$lib/components/RowLink.svelte';
+	import ScenarioPosition from '$lib/components/ScenarioPosition.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
 	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
-	import type { PageData } from './$types';
-
-	/** A position as the load hands it over: the vNAS id and callsign, and whether it is retired. */
-	type ShownPosition = PageData['scenario']['studentPosition'];
 
 	let { data } = $props();
 	// Pages beneath a draft stay on the draft.
@@ -35,17 +32,6 @@
 	<title>{scenario.name} | Library | Indy Center</title>
 </svelte:head>
 
-<!-- By short name and name, as controllers know it; a position the catalogue lacks shows its
-     callsign alone. -->
-{#snippet position(p: ShownPosition)}
-	<Position
-		callsign={p.callsign}
-		positionId={p.id}
-		show={['shortName', 'name']}
-		layout="inline"
-	/>{#if p.retired}{' '}<Text as="span" tone="muted">(retired)</Text>{/if}
-{/snippet}
-
 <Breadcrumbs items={crumbs} />
 
 {#if data.version.isDraft}
@@ -55,7 +41,7 @@
 <div class="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
 	<span>Scenario</span>
 	{#if scenario.retired}
-		<Badge size="sm" variant="gray" pill>Retired</Badge>
+		<Retired />
 	{/if}
 </div>
 <PageHeader title={scenario.name} />
@@ -67,11 +53,11 @@
 	</div>
 	<div>
 		<dt>Student position</dt>
-		<dd>{@render position(scenario.studentPosition)}</dd>
+		<dd><ScenarioPosition position={scenario.studentPosition} /></dd>
 	</div>
 	<div>
 		<dt>Teacher position</dt>
-		<dd>{@render position(scenario.teacherPosition)}</dd>
+		<dd><ScenarioPosition position={scenario.teacherPosition} /></dd>
 	</div>
 	{#if scenario.difficulty}
 		<div>
@@ -118,13 +104,13 @@
 		<ul class="divide-y divide-border">
 			{#each data.offeredBy as lp (lp.id)}
 				<li>
-					<a
+					<RowLink
 						href="/courses/{data.course.code}/lesson-plans/{lp.id}{q}"
-						class="flex items-baseline gap-4 px-4 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+						class="gap-4 px-4 py-3"
 					>
 						<span class="w-20 shrink-0 font-mono text-sm">{lp.code}</span>
 						<span>{lp.title}</span>
-					</a>
+					</RowLink>
 				</li>
 			{/each}
 		</ul>

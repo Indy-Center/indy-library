@@ -1,15 +1,13 @@
 <script lang="ts">
 	import {
-		Badge,
 		Breadcrumbs,
 		EmptyState,
-		Icon,
 		Link,
 		PageHeader,
 		Panel,
 		Text
 	} from '@indy-center/centerline-svelte';
-	import { mdiOpenInNew } from '@mdi/js';
+	import Retired from '$lib/components/Retired.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 
 	let { data } = $props();
@@ -35,16 +33,14 @@
 <div class="flex items-center gap-3">
 	<span class="font-mono text-sm">Task {data.task.number}</span>
 	{#if data.task.retired}
-		<Badge size="sm" variant="gray" pill>Retired</Badge>
+		<Retired />
 	{/if}
 </div>
 
+<PageHeader title={data.task.name} />
+<!-- Not PageHeader's lead line: a description runs to several lines, as written. -->
 {#if data.task.description}
-	<PageHeader title={data.task.name}>
-		<span class="whitespace-pre-line">{data.task.description}</span>
-	</PageHeader>
-{:else}
-	<PageHeader title={data.task.name} />
+	<p class="mt-4 max-w-3xl whitespace-pre-line">{data.task.description}</p>
 {/if}
 
 {#if data.children.length > 0}
@@ -97,13 +93,12 @@
 					{#if citation.url}
 						<Link href={citation.url} target="_blank" rel="noopener noreferrer">
 							{citation.name}
-							<span class="sr-only">(opens in a new tab)</span>
-							<Icon path={mdiOpenInNew} size="0.75em" />
+							{citation.edition} (new tab)
 						</Link>
 					{:else}
 						{citation.name}
+						{citation.edition}
 					{/if}
-					{citation.edition}
 					{#if citation.place}<span class="font-mono text-sm">{citation.place}</span>{/if}
 					{#if citation.title}
 						· {citation.title}

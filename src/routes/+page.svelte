@@ -25,13 +25,14 @@
 {:else}
 	<ul class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 		{#each data.courses as course (course.code)}
-			<Card as="li">
-				<!-- The link fills the card (negative margin cancels its padding), so its focus ring reaches the card's edges. -->
+			<Card as="li" flush>
+				<!-- The link fills the flush card and brings its padding, so its inset focus ring
+				     reaches the card's edges. -->
 				<a
 					href={course.hasCurrent
 						? `/courses/${course.code}`
 						: `/courses/${course.code}?version=draft`}
-					class="-m-4 block h-[calc(100%+2rem)] rounded-lg p-4 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+					class="block h-full p-4 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
 				>
 					<div class="flex items-center gap-2 font-mono text-sm">
 						<Icon path={mdiSchool} />

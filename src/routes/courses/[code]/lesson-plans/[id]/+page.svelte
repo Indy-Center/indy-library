@@ -7,11 +7,11 @@
 		Icon,
 		PageHeader,
 		Panel,
-		Position,
-		Prose,
-		Text
+		Prose
 	} from '@indy-center/centerline-svelte';
 	import { mdiClockOutline } from '@mdi/js';
+	import RowLink from '$lib/components/RowLink.svelte';
+	import ScenarioPosition from '$lib/components/ScenarioPosition.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
 	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
@@ -97,26 +97,17 @@
 		<ul class="divide-y divide-border">
 			{#each data.scenarios as scenario (scenario.id)}
 				<li>
-					<a
+					<RowLink
 						href="/courses/{data.course.code}/scenarios/{scenario.id}{q}"
-						class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+						class="flex-wrap gap-x-4 gap-y-1 px-4 py-3"
 					>
 						<span class="flex-1 font-medium">{scenario.name}</span>
-						<span
-							><Position
-								callsign={scenario.studentPosition.callsign}
-								positionId={scenario.studentPosition.id}
-								show={['shortName', 'name']}
-								layout="inline"
-							/>{#if scenario.studentPosition.retired}{' '}<Text as="span" tone="muted"
-									>(retired)</Text
-								>{/if}</span
-						>
+						<ScenarioPosition position={scenario.studentPosition} />
 						{#if scenario.difficulty}
 							<span class="text-sm text-muted-foreground">{scenario.difficulty}</span>
 						{/if}
 						<ModeBadge mode={scenario.mode} />
-					</a>
+					</RowLink>
 				</li>
 			{/each}
 		</ul>

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { duration } from '$lib/format';
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
+	import Retired from '$lib/components/Retired.svelte';
+	import RowLink from '$lib/components/RowLink.svelte';
 	import {
 		Badge,
-		Breadcrumbs,
 		Button,
 		Chip,
 		Credential,
@@ -21,8 +22,8 @@
 	// Pages beneath a draft stay on the draft.
 	let hasFacts = $derived(
 		data.facts.prerequisites.length > 0 ||
-			Boolean(data.facts.note) ||
-			Boolean(data.facts.issues) ||
+			Boolean(data.facts.prerequisitesNote) ||
+			Boolean(data.facts.credentialIssued) ||
 			Boolean(data.facts.academyExam) ||
 			Boolean(data.facts.estimatedWeeks) ||
 			Boolean(data.facts.consolidation) ||
@@ -35,14 +36,6 @@
 <svelte:head>
 	<title>{data.course.code} {data.course.title} | Library | Indy Center</title>
 </svelte:head>
-
-<Breadcrumbs
-	class="mb-4"
-	items={[
-		{ href: '/', label: 'Courses' },
-		{ href: `/courses/${data.course.code}${q}`, label: `${data.course.code} ${data.course.title}` }
-	]}
-/>
 
 {#if data.version.isDraft}
 	<DraftBanner
@@ -79,16 +72,14 @@
 			name={c.name}
 			kind={c.kind}
 			focusable
-		/>{:else}<Chip>{c.code}</Chip>{/if}{#if c.retired}{' '}<Text as="span" tone="muted"
-			>(retired)</Text
-		>{/if}
+		/>{:else}<Chip>{c.code}</Chip>{/if}{#if c.retired}{' '}<Retired />{/if}
 {/snippet}
 
 <!-- The course facts block. Each row shows only when its fact is set; with no row, no block.
 	Rows follow the CMS Details tab's order. -->
 {#if hasFacts}
 	<DescriptionList class="mt-6">
-		{#if data.facts.prerequisites.length > 0 || data.facts.note}
+		{#if data.facts.prerequisites.length > 0 || data.facts.prerequisitesNote}
 			<div>
 				<dt>To enrol you need</dt>
 				{#each data.facts.prerequisites as row, r (r)}
@@ -98,7 +89,7 @@
 						{/each}
 					</dd>
 				{/each}
-				{#if data.facts.note}<dd>{data.facts.note}</dd>{/if}
+				{#if data.facts.prerequisitesNote}<dd>{data.facts.prerequisitesNote}</dd>{/if}
 			</div>
 		{/if}
 		{#if data.facts.academyExam}
@@ -132,10 +123,10 @@
 				<dd>the {data.facts.ratingExam} rating exam</dd>
 			</div>
 		{/if}
-		{#if data.facts.issues}
+		{#if data.facts.credentialIssued}
 			<div>
 				<dt>Finishing earns</dt>
-				<dd>{@render credential(data.facts.issues)}</dd>
+				<dd>{@render credential(data.facts.credentialIssued)}</dd>
 			</div>
 		{/if}
 		{#if data.facts.moodleUrl}
@@ -155,9 +146,9 @@
 		<ol class="divide-y divide-border">
 			{#each module.lessonPlans as lp (lp.id)}
 				<li>
-					<a
+					<RowLink
 						href="/courses/{data.course.code}/lesson-plans/{lp.id}{q}"
-						class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3 transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+						class="flex-wrap gap-x-4 gap-y-1 px-4 py-3"
 					>
 						<span class="w-20 shrink-0 font-mono text-sm text-foreground-soft">{lp.code}</span>
 						<span class="flex-1 font-medium text-foreground">{lp.title}</span>
@@ -170,7 +161,7 @@
 						{#if lp.time}
 							<span class="text-sm text-muted-foreground">{duration(lp.time)}</span>
 						{/if}
-					</a>
+					</RowLink>
 				</li>
 			{/each}
 		</ol>
@@ -183,6 +174,6 @@
 
 {#if data.version.completionStandard}
 	<Panel title="Completion standard" level={2} class="mt-8">
-		<Text class="whitespace-pre-line">{data.version.completionStandard}</Text>
+		<p class="whitespace-pre-line">{data.version.completionStandard}</p>
 	</Panel>
 {/if}

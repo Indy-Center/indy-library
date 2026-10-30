@@ -31,8 +31,8 @@ describe('/courses/[code] facts', () => {
 	it('gives the prerequisites note and the credential finishing earns', async () => {
 		const { facts } = await page('/courses/S-GC', 'S-GC');
 
-		expect(facts.note).toBe('Read the made-up policy first.');
-		expect(facts.issues).toEqual({
+		expect(facts.prerequisitesNote).toBe('Read the made-up policy first.');
+		expect(facts.credentialIssued).toEqual({
 			code: 'S-GC',
 			name: 'Made-up ground certification',
 			kind: 'certification',
@@ -45,8 +45,8 @@ describe('/courses/[code] facts', () => {
 
 		expect(facts).toEqual({
 			prerequisites: [],
-			note: null,
-			issues: null,
+			prerequisitesNote: null,
+			credentialIssued: null,
 			academyExam: null,
 			estimatedWeeks: null,
 			consolidation: null,

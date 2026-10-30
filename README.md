@@ -19,15 +19,15 @@ system (see Centerline below).
 
 Every page needs a session; there are no public pages.
 
-| Route                               | Shows                                                                                                                                                                                      |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/`                                 | A card for every course with a current edition, plus drafts the reader may see                                                                                                             |
-| `/courses/{code}`                   | The current edition: its facts (enrolment, Academy exam, length, consolidation, rating exam, credential earned, Moodle), modules in order with their lesson plans, the completion standard |
-| `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered with each one's student position by short name and name                                               |
-| `/courses/{code}/scenarios/{id}`    | Airport, student and teacher positions by short name and name (marked when retired), difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it         |
-| `/tasks/{id}`                       | Number, name, description, place in the task tree, tasks beneath it, mapped competencies (inherited too), Sources                                                                          |
-| `/competencies`                     | A tab per framework edition (`?edition=`), each top-level competency folded over everything beneath it                                                                                     |
-| `/competencies/{id}`                | Text, source reference, rubric wording, the competencies beneath it, and every task mapped to it                                                                                           |
+| Route                               | Shows                                                                                                                                                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`                                 | A card for every course with a current edition, plus drafts the reader may see                                                                                                                         |
+| `/courses/{code}`                   | The current edition: its facts (enrolment, Academy exam, length, consolidation, rating exam, credential earned, Moodle), modules in order with their lesson plans, the completion standard             |
+| `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered with each one's student position (radio name, short name, sector, frequency)                                      |
+| `/courses/{code}/scenarios/{id}`    | Airport, student and teacher positions (radio name, short name, sector, frequency; marked when retired), difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it |
+| `/tasks/{id}`                       | Number, name, description, place in the task tree, tasks beneath it, mapped competencies (inherited too), Sources                                                                                      |
+| `/competencies`                     | A tab per framework edition (`?edition=`), each top-level competency folded over everything beneath it                                                                                                 |
+| `/competencies/{id}`                | Text, source reference, rubric wording, the competencies beneath it, and every task mapped to it                                                                                                       |
 
 Add `?version=draft` to any `/courses/...` page to read the course's draft
 instead. Pages beneath a draft keep it in their links, and every draft page is
