@@ -175,7 +175,10 @@ export type Credential = {
 	retired: boolean;
 };
 
-/** One of ZID's positions as the CMS copies it from vNAS Data Admin; design-system's `VnasPosition`. */
+/**
+ * One of ZID's positions as the CMS copies it from vNAS Data Admin. It has every field of
+ * Centerline's `PositionInfo`, so it goes to `setPositions` as it is.
+ */
 export type CataloguePosition = {
 	/** vNAS's id, the same its live controller feed uses. */
 	id: string;

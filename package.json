@@ -37,7 +37,7 @@
 		"wrangler": "^4.149.0"
 	},
 	"dependencies": {
-		"@indy-center/centerline-svelte": "^0.1.1",
+		"@indy-center/centerline-svelte": "^0.2.0",
 		"@indy-center/centerline-tokens": "^0.1.1",
 		"@indy-center/identity": "^1.0.0",
 		"@mdi/js": "^7.4.47"
