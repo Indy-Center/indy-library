@@ -214,5 +214,40 @@ describe('handle, with PREVIEW=1', () => {
 			const { courses } = await event.locals.cms.courseList();
 			expect(courses.map((c) => c.code)).toEqual(['S-GC', 'A-LC', 'X-NEW']);
 		});
+
+		it('gives ?as=rated VATSIM controller and pilot ratings', async () => {
+			const { event } = previewRequestTo('http://localhost:5173/?as=rated');
+
+			await handle({ event, resolve: ok() });
+
+			const vatsim = event.locals.session!.user.vatsimData?.vatsim;
+			expect(vatsim?.rating?.short).toBe('C1');
+			expect(vatsim?.pilotrating?.short).toBe('PPL');
+		});
+
+		it('adds the preview-only cases to what the CMS serves', async () => {
+			const { event } = previewRequestTo('http://localhost:5173/');
+
+			await handle({ event, resolve: ok() });
+
+			const cases = await event.locals.cms.courseVersion('P-CASES', 'current');
+			expect(cases!.modules[0].lessonPlans[0].bodyHtml).toContain('<img');
+			const { frameworks, competencies } = await event.locals.cms.catalogue();
+			const empty = frameworks.find((f) => f.id === 'fw-preview-empty')!;
+			expect(competencies.filter((c) => c.frameworkId === empty.id)).toEqual([]);
+			expect(competencies.filter((c) => c.frameworkId === 'fw-preview-deep')).toHaveLength(3);
+		});
+	});
+
+	it('is imported by no test and by nothing but the preview, so the Worker build omits it', () => {
+		const sources = import.meta.glob<string>('/src/**/*.{ts,svelte}', {
+			query: '?raw',
+			eager: true,
+			import: 'default'
+		});
+		const importers = Object.entries(sources)
+			.filter(([, source]) => /from\s+['"][^'"]*preview-fixtures['"]/.test(source))
+			.map(([path]) => path);
+		expect(importers).toEqual(['/src/lib/testing/preview.ts']);
 	});
 });

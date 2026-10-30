@@ -4,7 +4,8 @@ import { createCms, memoryStore } from '$lib/server/cms';
 import { createTeaching } from '$lib/server/teaching';
 import { Role } from '$lib/permissions';
 import { AUTHOR_CID } from './fixtures';
-import { CMS_URL, TOKEN, cmsDocuments, fakeCms, fakeTraining } from './library';
+import { CMS_URL, TOKEN, fakeCms, fakeTraining } from './library';
+import { previewDocuments } from './preview-fixtures';
 import { session } from './readers';
 
 /**
@@ -12,13 +13,20 @@ import { session } from './readers';
  * picked with `?as=<name>`, with no identity, CMS or training-tools running.
  *
  * Imported only by `handle`, inside an `import.meta.env.DEV` branch, with a dynamic `import()`,
- * so the Worker build never contains it.
+ * so the Worker build never contains it. The fixtures come with the extra cases of
+ * `./preview-fixtures` laid over them, which no test imports.
  */
 
 /** Remembers the picked reader for the browser session. */
 export const PREVIEW_COOKIE = 'library_preview_as';
 
-type PreviewReader = { cid: string; roles: string[]; teaches: string[] };
+type PreviewReader = {
+	cid: string;
+	roles: string[];
+	teaches: string[];
+	/** VATSIM's short rating codes, shown in the header. */
+	ratings?: { rating?: string; pilotRating?: string };
+};
 
 /** The readers the preview offers, by the name `?as=` picks them with. */
 export const PREVIEW_READERS = {
@@ -29,7 +37,9 @@ export const PREVIEW_READERS = {
 	/** Listed in S-GC's authors, teaching nothing. */
 	author: { cid: AUTHOR_CID, roles: [], teaches: [] },
 	/** The Training Admin. */
-	admin: { cid: '1000003', roles: [Role.ADMIN], teaches: [] }
+	admin: { cid: '1000003', roles: [Role.ADMIN], teaches: [] },
+	/** Has a VATSIM controller rating (C1) and pilot rating (PPL), for the header. */
+	rated: { cid: '1000006', roles: [], teaches: [], ratings: { rating: 'C1', pilotRating: 'PPL' } }
 } satisfies Record<string, PreviewReader>;
 
 export type PreviewReaderName = keyof typeof PREVIEW_READERS;
@@ -67,13 +77,17 @@ export function previewLocals(
 	event: RequestEvent
 ): Pick<App.Locals, 'session' | 'cms' | 'teaching'> {
 	const reader = PREVIEW_READERS[pickReader(event)];
-	const reading: SessionContext = session(reader.cid, reader.roles);
+	const reading: SessionContext = session(
+		reader.cid,
+		reader.roles,
+		'ratings' in reader ? reader.ratings : {}
+	);
 	return {
 		session: reading,
 		cms: createCms({
 			baseUrl: CMS_URL,
 			token: TOKEN,
-			fetch: fakeCms(cmsDocuments()).fetch,
+			fetch: fakeCms(previewDocuments()).fetch,
 			store: memoryStore()
 		}),
 		teaching: createTeaching(fakeTraining({ [reader.cid]: reader.teaches }).binding)
