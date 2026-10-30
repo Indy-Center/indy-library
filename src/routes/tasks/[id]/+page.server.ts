@@ -37,11 +37,11 @@ export const load = (async ({ locals, params }) => {
 		];
 	});
 
-	// `place` is where in the source, such as `3-7-2`; the citation's title is not shown yet.
-	const citations = task.citations.flatMap(({ sourceId, place }) => {
+	// `place` is where in the source, such as `3-7-2` ('' when blank); `title` may be null.
+	const citations = task.citations.flatMap(({ sourceId, place, title }) => {
 		const source = sources.get(sourceId);
 		if (!source) return [];
-		return [{ name: source.name, edition: source.edition, url: source.url, section: place }];
+		return [{ name: source.name, edition: source.edition, url: source.url, place, title }];
 	});
 
 	return {

@@ -1,4 +1,6 @@
 import { redirect, type Handle } from '@sveltejs/kit';
+import { sequence } from '@sveltejs/kit/hooks';
+import { colorSchemeHandle } from '@indy-center/centerline-svelte/hooks';
 import { getSessionContext, resolveIdentityUrl } from '$lib/server/identity';
 import { loginUrl } from '$lib/identity-links';
 import { cacheApiStore, createCms, memoryStore, type Cms } from '$lib/server/cms';
@@ -14,7 +16,15 @@ import { createTeaching } from '$lib/server/teaching';
  * endpoints never run one. A layout gate covers the first view and then quietly stops.
  * (training-tools, decisions/0004-gate-in-handle-not-layout.md)
  */
-export const handle: Handle = async ({ event, resolve }) => {
+const libraryHandle: Handle = async ({ event, resolve }) => {
+	// The dev preview (README "Local development"). `import.meta.env.DEV` is false in the Worker
+	// build, so this branch and the module it imports are left out of it.
+	if (import.meta.env.DEV && process.env.PREVIEW === '1') {
+		const { previewLocals } = await import('$lib/testing/preview');
+		Object.assign(event.locals, previewLocals(event));
+		return resolve(event);
+	}
+
 	event.locals.session = await getSessionContext(event);
 
 	if (!event.locals.session) {
@@ -28,6 +38,22 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.teaching = createTeaching(event.platform?.env.TRAINING);
 	return resolve(event);
 };
+
+// Pages send no Cache-Control of their own, and they carry a reader's time zone (Centerline's
+// time-zone page asks for `private`) and their teacher notes, so they stay out of shared caches.
+const privatePages: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+	if (!response.headers.has('Cache-Control')) response.headers.set('Cache-Control', 'private');
+	return response;
+};
+
+// The colour scheme comes first, so every page is drawn in the reader's scheme: dark until they
+// choose.
+export const handle: Handle = sequence(
+	colorSchemeHandle({ fallback: 'dark' }) as Handle,
+	privatePages,
+	libraryHandle
+);
 
 /** Kept copies for `vite dev`, which may have no Cache API. Never used on Cloudflare. */
 const devCopies = memoryStore();

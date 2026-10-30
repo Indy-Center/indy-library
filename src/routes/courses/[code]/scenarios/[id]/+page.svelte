@@ -1,83 +1,93 @@
 <script lang="ts">
+	import {
+		Airport,
+		Badge,
+		Breadcrumbs,
+		DescriptionList,
+		EmptyState,
+		PageHeader,
+		Panel
+	} from '@indy-center/centerline-svelte';
 	import ModeBadge from '$lib/components/ModeBadge.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import Retired from '$lib/components/Retired.svelte';
+	import RowLink from '$lib/components/RowLink.svelte';
+	import ScenarioPosition from '$lib/components/ScenarioPosition.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
 	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
-
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
 
 	let { data } = $props();
 	// Pages beneath a draft stay on the draft.
 	let q = $derived(data.version.isDraft ? '?version=draft' : '');
 	let scenario = $derived(data.scenario);
+	let crumbs = $derived([
+		{ href: '/', label: 'Courses' },
+		{ href: `/courses/${data.course.code}${q}`, label: data.course.code },
+		{ href: `/courses/${data.course.code}/scenarios/${scenario.id}${q}`, label: scenario.name }
+	]);
 </script>
 
 <svelte:head>
-	<title>{scenario.name} | Indy Center Library</title>
+	<title>{scenario.name} | Library | Indy Center</title>
 </svelte:head>
 
-<nav class="text-sm text-gray-400">
-	<a href="/" class="hover:text-sky-300">Courses</a>
-	<span class="mx-1">/</span>
-	<a href="/courses/{data.course.code}{q}" class="hover:text-sky-300">{data.course.code}</a>
-	<span class="mx-1">/</span>
-	<span>Scenarios</span>
-</nav>
+<Breadcrumbs items={crumbs} />
 
 {#if data.version.isDraft}
 	<div class="mt-4"><DraftBanner number={data.version.number} /></div>
 {/if}
 
-<header class="mt-2">
-	<div class="flex items-center gap-3">
-		<span class="text-sm text-sky-300">Scenario</span>
-		{#if scenario.retired}
-			<span
-				class="rounded-lg border border-gray-500/30 bg-gray-500/10 px-2 py-0.5 text-xs text-gray-300"
-			>
-				Retired
-			</span>
-		{/if}
+<div class="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
+	<span>Scenario</span>
+	{#if scenario.retired}
+		<Retired />
+	{/if}
+</div>
+<PageHeader title={scenario.name} />
+
+<DescriptionList class="mt-6 max-w-2xl">
+	<div>
+		<dt>Airport</dt>
+		<dd><Airport airport={{ code: scenario.airport }} /></dd>
 	</div>
-	<h1 class="text-3xl font-bold text-white">{scenario.name}</h1>
-	<dl class="mt-4 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-4">
+	<div>
+		<dt>Student position</dt>
+		<dd><ScenarioPosition position={scenario.studentPosition} /></dd>
+	</div>
+	<div>
+		<dt>Teacher position</dt>
+		<dd><ScenarioPosition position={scenario.teacherPosition} /></dd>
+	</div>
+	{#if scenario.difficulty}
 		<div>
-			<dt class="text-xs tracking-wide text-gray-400 uppercase">Airport</dt>
-			<dd class="font-mono text-white">{scenario.airport}</dd>
+			<dt>Difficulty</dt>
+			<dd>{scenario.difficulty}</dd>
 		</div>
-		<div>
-			<dt class="text-xs tracking-wide text-gray-400 uppercase">Position</dt>
-			<dd class="font-mono text-white">{scenario.position}</dd>
-		</div>
-		<div>
-			<dt class="text-xs tracking-wide text-gray-400 uppercase">Difficulty</dt>
-			<dd class="text-white">{scenario.difficulty}</dd>
-		</div>
-		<div>
-			<dt class="text-xs tracking-wide text-gray-400 uppercase">Live or sim</dt>
-			<dd><ModeBadge mode={scenario.mode} /></dd>
-		</div>
-	</dl>
-</header>
+	{/if}
+	<div>
+		<dt>Live or sim</dt>
+		<dd><ModeBadge mode={scenario.mode} /></dd>
+	</div>
+</DescriptionList>
 
 {#if data.showsTeacherNotes}
 	<TeacherNotesNotice />
 {/if}
 
-<Section title="Practical tasks">
+<Panel title="Practical tasks" level={2} flush class="mt-8">
 	{#if data.practicalTasks.length === 0}
-		<p class="px-5 py-4 text-sm text-gray-400">This scenario has no practical tasks.</p>
+		<EmptyState size="inline" class="px-4 py-4">This scenario has no practical tasks.</EmptyState>
 	{:else}
-		<ol class="divide-y divide-slate-700/60">
+		<ol class="divide-y divide-border">
 			{#each data.practicalTasks as pt (pt.id)}
-				<li class="px-5 py-3">
+				<li class="px-4 py-3">
 					<div class="flex flex-wrap items-baseline justify-between gap-2">
 						<TaskLink task={pt.task} />
 						{#if pt.required}
-							<span class="text-xs font-medium text-sky-300">Required</span>
+							<Badge size="sm" variant="sky">Required</Badge>
 						{:else}
-							<span class="text-xs text-gray-400">Optional</span>
+							<Badge size="sm" variant="gray">Optional</Badge>
 						{/if}
 					</div>
 					{#if pt.teacherNotes}
@@ -87,22 +97,22 @@
 			{/each}
 		</ol>
 	{/if}
-</Section>
+</Panel>
 
 {#if data.offeredBy.length > 0}
-	<Section title="Offered by">
-		<ul class="divide-y divide-slate-700/60">
+	<Panel title="Offered by" level={2} flush class="mt-8">
+		<ul class="divide-y divide-border">
 			{#each data.offeredBy as lp (lp.id)}
 				<li>
-					<a
+					<RowLink
 						href="/courses/{data.course.code}/lesson-plans/{lp.id}{q}"
-						class="flex items-baseline gap-4 px-5 py-3 transition-colors duration-200 hover:bg-slate-700/40"
+						class="gap-4 px-4 py-3"
 					>
-						<span class="w-20 shrink-0 font-mono text-sm text-sky-300">{lp.code}</span>
-						<span class="text-white">{lp.title}</span>
-					</a>
+						<span class="w-20 shrink-0 font-mono text-sm">{lp.code}</span>
+						<span>{lp.title}</span>
+					</RowLink>
 				</li>
 			{/each}
 		</ul>
-	</Section>
+	</Panel>
 {/if}

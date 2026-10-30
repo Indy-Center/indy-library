@@ -18,7 +18,8 @@ describe('/competencies/[id]', () => {
 			title: 'Taxi instructions',
 			text: 'Issues clear, correct taxi instructions.',
 			sourceReference: 'Example Order 1-2-3',
-			pairedGcapCode: 'G-9.9'
+			pairedGcapCode: 'G-9.9',
+			frameworkId: 'fw-usa'
 		});
 		expect(data.framework).toEqual({ name: 'USA', edition: 'Example edition 1' });
 		expect(data.parent).toEqual({ id: 'comp-heading', sourceId: '1', title: 'Ground operations' });
@@ -57,6 +58,16 @@ describe('/competencies/[id]', () => {
 				inheritedFrom: { id: 'task-ground', number: '1', name: 'Ground movement' }
 			}
 		]);
+	});
+
+	it('lists a retired task mapped to it, marked retired and not inherited', async () => {
+		const data = await competency('comp-gcap-move');
+
+		expect(data.tasks).toContainEqual({
+			task: { id: 'task-retired-strip', number: '4', name: 'Mark a flight strip' },
+			retired: true,
+			inheritedFrom: null
+		});
 	});
 
 	it('is a 404 for a competency that does not exist', async () => {

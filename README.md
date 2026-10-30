@@ -11,22 +11,23 @@ The courseware is written by training staff in the CMS (Payload, at
 `cms.flyindycenter.com`). This app only reads it; nothing is written here, and
 no student data passes through it.
 
-SvelteKit on Cloudflare Workers, with Svelte 5, Tailwind v4 and the same look
-and conventions as [training-tools](https://github.com/Indy-Center/training-tools).
+SvelteKit on Cloudflare Workers, with Svelte 5 and Tailwind v4. The look is
+[Indy Centerline](https://centerline.flyindycenter.com), Indy Center's design
+system (see Centerline below).
 
 ## Pages
 
 Every page needs a session; there are no public pages.
 
-| Route                               | Shows                                                                                                            |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `/`                                 | Every course with a current version, plus drafts the reader may see                                              |
-| `/courses/{code}`                   | The current version: modules in order, each with its lesson plans                                                |
-| `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered                             |
-| `/courses/{code}/scenarios/{id}`    | Airport, position, difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it |
-| `/tasks/{id}`                       | Number, name, description, place in the task tree, mapped competencies (inherited too), cited references         |
-| `/competencies`                     | A tab per framework edition (`?edition=`), each top-level competency folded over everything beneath it           |
-| `/competencies/{id}`                | Text, framework edition, rubric wording, and every task mapped to it                                             |
+| Route                               | Shows                                                                                                                                                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`                                 | A card for every course with a current edition, plus drafts the reader may see                                                                                                                         |
+| `/courses/{code}`                   | The current edition: its facts (enrolment, Academy exam, length, consolidation, rating exam, credential earned, Moodle), modules in order with their lesson plans, the completion standard             |
+| `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered with each one's student position (radio name, short name, sector, frequency)                                      |
+| `/courses/{code}/scenarios/{id}`    | Airport, student and teacher positions (radio name, short name, sector, frequency; marked when retired), difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it |
+| `/tasks/{id}`                       | Number, name, description, place in the task tree, tasks beneath it, mapped competencies (inherited too), Sources                                                                                      |
+| `/competencies`                     | A tab per framework edition (`?edition=`), each top-level competency folded over everything beneath it                                                                                                 |
+| `/competencies/{id}`                | Text, source reference, rubric wording, the competencies beneath it, and every task mapped to it                                                                                                       |
 
 Add `?version=draft` to any `/courses/...` page to read the course's draft
 instead. Pages beneath a draft keep it in their links, and every draft page is
@@ -106,6 +107,17 @@ with the copied types: a copy kept in the old shape is then never read again,
 not even as the fallback, so until the CMS has been read once in the new shape
 a CMS outage is a 503.
 
+## Centerline
+
+The look is [Indy Centerline](https://centerline.flyindycenter.com)
+(`@indy-center/centerline-tokens` and `-svelte`), set up in `src/app.css`,
+`src/app.html`, `src/hooks.server.ts` and the root layout. Each reader's light
+or dark choice comes from the `indy-color-scheme` cookie shared across
+`flyindycenter.com`; with none, the page is dark. The time zone is read from
+`indy-time-zone` and not yet saved to identity. Pages carry no `Cache-Control`
+of their own, so `handle` sends `private`: a reader's zone and teacher notes
+never sit in a shared cache.
+
 ## Bindings, vars and secrets
 
 All in `wrangler.jsonc`:
@@ -141,11 +153,58 @@ there is no Cache API in dev, copies are kept in memory instead.
 
 `.dev.vars` is read at startup only; restart after editing it.
 
+### Preview
+
+```bash
+PREVIEW=1 pnpm dev               # http://localhost:5173/?as=admin
+```
+
+Serves every page with no identity, CMS or training-tools running. It shows the
+test fixtures (`src/lib/testing/fixtures.ts`), not the CMS's courseware. Pick
+the reader with `?as=<name>` on any page; the pick is kept in a
+`library_preview_as` cookie until the browser closes, and without either you are
+`student`:
+
+| `?as=`    | Reader                                                           |
+| --------- | ---------------------------------------------------------------- |
+| `student` | No roles, teaches nothing                                        |
+| `teacher` | Teaches S-GC, the fixtures' course with teacher notes            |
+| `author`  | An author of S-GC and X-NEW in the fixtures, teaches nothing     |
+| `admin`   | The Training Admin (`training:admin`)                            |
+| `rated`   | VATSIM controller rating C1 and pilot rating PPL, for the header |
+
+The preview also lays extra, made-up cases over the fixtures
+(`src/lib/testing/preview-fixtures.ts`), for states the fixtures cannot hold
+because load tests pin them. No test imports that file:
+
+- `/courses/P-CASES/lesson-plans/lp-preview-rich`: a lesson plan whose body has
+  headings, lists, a link and an image.
+- `/courses/P-CASES/scenarios/scn-tower-day`: a scenario with no practical tasks.
+- `/competencies?edition=fw-preview-empty`: an edition with no competencies.
+- `/competencies?edition=fw-preview-deep`: competencies nested three deep, the
+  deepest with a multi-line lead and rubric.
+
+`P-CASES` is not on the course list (a load test pins the list); open it by
+address. There is no preview state with no courses at all: it would need a
+separate toggle.
+
+An unknown name shows `student` and logs the names there are. `PREVIEW` is read
+from the shell (`process.env`), not `.dev.vars`. The preview only runs under
+`vite dev`: the Worker build leaves it out and always needs a real session.
+
 ## Checks and tests
 
 ```bash
 pnpm format:check && pnpm build && pnpm check && pnpm test
 ```
+
+`check` runs `scripts/check-style.mjs` first (no raw palette colours or
+hex/rgb/hsl colours, no `label=` on `Breadcrumbs`, no `px-5` inside a `Panel`),
+then `svelte-check`.
+
+The pre-commit hook runs lint-staged (Prettier) and `pnpm test`, not `pnpm
+check`: that made commits slow. CI still runs it, so a type or style slip shows
+on the pull request; run `pnpm check` yourself before pushing.
 
 `build` comes before `check`, as in training-tools. CI runs exactly these on
 every pull request (`.github/workflows/ci.yml`). Each push to `main` runs them

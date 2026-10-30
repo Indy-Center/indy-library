@@ -124,10 +124,18 @@ export const sgcCurrent: CourseVersionDocument = {
 		academyExam: 'S2',
 		estimatedWeeks: { min: 4, max: 8 },
 		moodleUrl: 'https://moodle.example.com/course/1',
-		prerequisites: [{ anyOf: ['X-OBS'] }],
+		// Ticket 07: two rows. The first is "one of two" (the second is retired); the second row's
+		// code is not in the catalogue.
+		prerequisites: [{ anyOf: ['X-OBS', 'X-OLD'] }, { anyOf: ['X-GONE'] }],
 		credentialIssued: 'S-GC'
 	},
-	version: { id: 'ver-sgc-1', number: 1, ...version },
+	// Ticket 08: a standard of two lines.
+	version: {
+		id: 'ver-sgc-1',
+		number: 1,
+		...version,
+		completionStandard: 'Pass every lesson plan.\nThen sit the made-up review.'
+	},
 	scale: { id: 'scale-1', name: 'Three points', points: POINTS },
 	defaultMinimum: POINTS[1],
 	modules: [
@@ -140,21 +148,91 @@ export const sgcCurrent: CourseVersionDocument = {
 	]
 };
 
+// Scenario cases for the scenario page's browser check (ticket 10): a retired one, and one
+// with no difficulty. Only S-GC's draft offers them, so no published-version page changes.
+const retiredScenario: Scenario = {
+	...quietAfternoon,
+	id: 'scn-retired',
+	name: 'An old evening at Example Field',
+	difficulty: 'hard',
+	mode: 'live',
+	retired: true
+};
+
+const unratedScenario: Scenario = {
+	...quietAfternoon,
+	id: 'scn-unrated',
+	name: 'A foggy morning at Example Field',
+	difficulty: null
+};
+
 /** S-GC's next version, being written. */
 export const sgcDraft: CourseVersionDocument = {
 	...sgcCurrent,
-	version: { ...sgcCurrent.version, id: 'ver-sgc-2', number: 2, status: 'draft' },
+	version: {
+		...sgcCurrent.version,
+		id: 'ver-sgc-2',
+		number: 2,
+		status: 'draft',
+		// Ticket 08: differs from the current edition's.
+		completionStandard: 'Pass every lesson plan, rewritten.'
+	},
 	modules: [
 		{
 			...sgcCurrent.modules[0],
-			lessonPlans: [{ ...taxiBasics, title: 'Taxi basics, rewritten' }]
+			lessonPlans: [
+				{
+					...taxiBasics,
+					title: 'Taxi basics, rewritten',
+					scenarios: [quietAfternoon, retiredScenario, unratedScenario]
+				}
+			]
 		}
 	]
 };
 
+// Scenario position cases (library-centerline 11), offered by A-LC's published lesson plan so a
+// student sees them. S-GC's `scn-quiet` already has a student position with a short name
+// (XMP_GND). These add one without a short name (XMP_TWR), a retired one (XMP_DEL), and one
+// the catalogue lacks (XMP_APP). No practical tasks, so no teacher notes to decide on.
+const towerDay: Scenario = {
+	id: 'scn-tower-day',
+	name: 'A busy day in Example Tower',
+	airport: 'KXMP',
+	studentPosition: { id: 'pos-xmp-twr', callsign: 'XMP_TWR' },
+	teacherPosition: { id: 'pos-xmp-gnd', callsign: 'XMP_GND' },
+	difficulty: 'medium',
+	mode: 'sim',
+	retired: false,
+	practicalTasks: []
+};
+
+const oldDelivery: Scenario = {
+	...towerDay,
+	id: 'scn-old-delivery',
+	name: 'Clearances from the old delivery desk',
+	studentPosition: { id: 'pos-xmp-del', callsign: 'XMP_DEL' },
+	teacherPosition: { id: 'pos-xmp-twr', callsign: 'XMP_TWR' }
+};
+
+const lostPosition: Scenario = {
+	...towerDay,
+	id: 'scn-lost-position',
+	name: 'Arrivals from a missing approach',
+	studentPosition: { id: 'pos-xmp-app', callsign: 'XMP_APP' },
+	teacherPosition: { id: 'pos-xmp-del', callsign: 'XMP_DEL' }
+};
+
 export const alcCurrent: CourseVersionDocument = {
 	course: { id: 'course-alc', code: 'A-LC', title: 'Local Control', authors: [], ...noFacts },
-	version: { id: 'ver-alc-1', number: 1, ...version, description: 'The made-up tower course.' },
+	version: {
+		id: 'ver-alc-1',
+		number: 1,
+		...version,
+		description: 'The made-up tower course.',
+		// Ticket 08: blank, so the page shows no completion standard.
+		completionStandard: ''
+	},
 	scale: { id: 'scale-1', name: 'Three points', points: POINTS },
 	defaultMinimum: POINTS[1],
 	modules: [
@@ -179,7 +257,8 @@ export const alcCurrent: CourseVersionDocument = {
 							teacherNotes: 'SECRET-ALC: ask about runway crossings.'
 						}
 					],
-					scenarios: []
+					// Ticket 11's position cases.
+					scenarios: [towerDay, oldDelivery, lostPosition]
 				}
 			]
 		}
@@ -193,7 +272,9 @@ export const xnewDraft: CourseVersionDocument = {
 		code: 'X-NEW',
 		title: 'Unreleased Course',
 		authors: [AUTHOR_CID],
-		...noFacts
+		...noFacts,
+		// Ticket 08: equal minimum and maximum weeks.
+		estimatedWeeks: { min: 6, max: 6 }
 	},
 	version: { id: 'ver-xnew-1', number: 1, ...version, status: 'draft' },
 	scale: null,
@@ -297,6 +378,17 @@ export const catalogue: Catalogue = {
 			rank: null,
 			grantedOnArrival: [],
 			retired: false
+		},
+		// Ticket 07: a retired credential.
+		{
+			id: 'cred-xold',
+			code: 'X-OLD',
+			kind: 'endorsement',
+			name: 'Made-up retired endorsement',
+			description: 'No longer issued.',
+			rank: null,
+			grantedOnArrival: [],
+			retired: true
 		}
 	],
 	positions: [
@@ -323,6 +415,20 @@ export const catalogue: Catalogue = {
 			starred: true,
 			requiredCredentials: [],
 			retired: false
+		},
+		// Ticket 11: a position vNAS has dropped, kept and retired. No position `pos-xmp-app`
+		// (XMP_APP) is here: a scenario names one the catalogue lacks.
+		{
+			id: 'pos-xmp-del',
+			callsign: 'XMP_DEL',
+			name: 'Example Delivery',
+			shortName: 'XMP CD',
+			radioName: 'Example Clearance',
+			frequency: 121650000,
+			facility: { id: 'XMP', name: 'Example Field ATCT' },
+			starred: false,
+			requiredCredentials: [{ anyOf: ['S-GC'] }],
+			retired: true
 		}
 	],
 	tasks: [
@@ -380,6 +486,46 @@ export const catalogue: Catalogue = {
 			parentId: null,
 			retired: false,
 			mappings: [],
+			citations: []
+		},
+		// Task page cases (library-centerline 12). Nothing here is mapped, so the competency
+		// pages' lists are unchanged. `task-readback` gives the browser check ancestors, a child
+		// (task-cited) and inherited mappings; `task-cited` has three citations: with a title,
+		// without one, and with a blank place.
+		{
+			id: 'task-cited',
+			number: '1.1.1.1',
+			name: 'Confirm the hold short',
+			description: 'Line one of the description.\nLine two, after a break.',
+			parentId: 'task-readback',
+			retired: false,
+			mappings: [],
+			citations: [
+				{ sourceId: 'source-order', place: '3-7-2', title: 'Taxi and ground movement' },
+				{ sourceId: 'source-notes', place: 'Chapter 4', title: null },
+				{ sourceId: 'source-order', place: '', title: 'Whole-document overview' }
+			]
+		},
+		{
+			id: 'task-retired',
+			number: '3',
+			name: 'Issue a paper strip',
+			description: '',
+			parentId: null,
+			retired: true,
+			mappings: [],
+			citations: []
+		},
+		// Competency page case (library-centerline 14): a retired task that teaches
+		// `comp-gcap-move` (the others there are live), for the "Retired" badge.
+		{
+			id: 'task-retired-strip',
+			number: '4',
+			name: 'Mark a flight strip',
+			description: '',
+			parentId: null,
+			retired: true,
+			mappings: [{ competencyId: 'comp-gcap-move', fromTaskId: 'task-retired-strip' }],
 			citations: []
 		}
 	]

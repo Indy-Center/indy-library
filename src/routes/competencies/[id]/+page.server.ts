@@ -27,6 +27,7 @@ export const load = (async ({ locals, params }) => {
 	return {
 		competency: {
 			id: competency.id,
+			frameworkId: competency.frameworkId,
 			sourceId: competency.sourceId,
 			title: competency.title,
 			text: competency.text,
