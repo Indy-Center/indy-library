@@ -5,6 +5,9 @@
 		Badge,
 		Breadcrumbs,
 		Button,
+		Chip,
+		Credential,
+		DescriptionList,
 		EmptyState,
 		Icon,
 		PageHeader,
@@ -15,6 +18,10 @@
 
 	let { data } = $props();
 	// Pages beneath a draft stay on the draft.
+	// 08 adds its own facts to this test.
+	let hasFacts = $derived(
+		data.facts.prerequisites.length > 0 || Boolean(data.facts.note) || Boolean(data.facts.issues)
+	);
 	let q = $derived(data.version.isDraft ? '?version=draft' : '');
 </script>
 
@@ -61,6 +68,43 @@
 		<span>VATUSA Academy {data.course.academyExam} exam required</span>
 	{/if}
 </div>
+
+{#snippet credential(c: (typeof data.facts.prerequisites)[number][number])}
+	{#if c.name !== null && c.kind !== null}
+		<Credential code={c.code} name={c.name} kind={c.kind} focusable />
+	{:else}
+		<Chip>{c.code}</Chip>
+	{/if}
+	{#if c.retired}<Text as="span" tone="muted">(retired)</Text>{/if}
+{/snippet}
+
+<!-- The course facts block. Each row shows only when its fact is set; with no row, no block.
+	Rows are numbered as in ticket 08's order; 08 adds rows 2 to 5 where marked. -->
+{#if hasFacts}
+	<DescriptionList class="mt-6">
+		{#if data.facts.prerequisites.length > 0 || data.facts.note}
+			<div>
+				<dt>To enrol you need</dt>
+				{#each data.facts.prerequisites as row, r (r)}
+					<dd>
+						{#each row as c, i (c.code)}
+							{#if i > 0}, or
+							{/if}{@render credential(c)}
+						{/each}
+					</dd>
+				{/each}
+				{#if data.facts.note}<dd>{data.facts.note}</dd>{/if}
+			</div>
+		{/if}
+		<!-- Rows 2 to 5 (ticket 08) go here. -->
+		{#if data.facts.issues}
+			<div>
+				<dt>Finishing earns</dt>
+				<dd>{@render credential(data.facts.issues)}</dd>
+			</div>
+		{/if}
+	</DescriptionList>
+{/if}
 
 {#each data.modules as module, i (module.id)}
 	<Panel title="Module {i + 1} · {module.title}" level={2} flush class="mt-8">

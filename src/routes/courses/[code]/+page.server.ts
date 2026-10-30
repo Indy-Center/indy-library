@@ -1,4 +1,4 @@
-import { courseSummary, courseVersion, maySeeDraft, versionOf } from '$lib/server/reader';
+import { courseSummary, courseVersion, fromCms, maySeeDraft, versionOf } from '$lib/server/reader';
 import type { PageServerLoad } from './$types';
 
 /**
@@ -9,6 +9,18 @@ export const load = (async ({ locals, params, url }) => {
 	const doc = await courseVersion(locals, params.code, url);
 	const isDraft = doc.version.status === 'draft';
 	const summary = await courseSummary(locals, params.code);
+	const { credentials } = await fromCms(() => locals.cms.catalogue());
+
+	// A code the catalogue lacks keeps its bare code: name and kind are null.
+	const credential = (code: string) => {
+		const found = credentials.find((c) => c.code === code);
+		return {
+			code,
+			name: found?.name ?? null,
+			kind: found?.kind ?? null,
+			retired: found?.retired ?? false
+		};
+	};
 
 	// Built field by field rather than passed through, so nothing the reader may not see (teacher
 	// notes, authors) reaches the browser by accident.
@@ -22,6 +34,13 @@ export const load = (async ({ locals, params, url }) => {
 			...versionOf(doc),
 			description: doc.version.description,
 			time: doc.version.time
+		},
+		// The course's facts block (the same on the current edition and the draft). Ticket 08 adds its
+		// other facts here.
+		facts: {
+			prerequisites: doc.course.prerequisites.map((row) => row.anyOf.map(credential)),
+			note: doc.course.prerequisitesNote.trim() ? doc.course.prerequisitesNote : null,
+			issues: doc.course.credentialIssued ? credential(doc.course.credentialIssued) : null
 		},
 		// The draft's number, to link to it from the current version, for those who may see it.
 		draft:
