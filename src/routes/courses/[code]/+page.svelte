@@ -1,8 +1,17 @@
 <script lang="ts">
 	import { duration } from '$lib/format';
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
-	import IconClock from '~icons/mdi/clock-outline';
-	import IconExam from '~icons/mdi/clipboard-check-outline';
+	import {
+		Badge,
+		Breadcrumbs,
+		Button,
+		EmptyState,
+		Icon,
+		PageHeader,
+		Panel,
+		Text
+	} from '@indy-center/centerline-svelte';
+	import { mdiClipboardCheckOutline, mdiClockOutline } from '@mdi/js';
 
 	let { data } = $props();
 	// Pages beneath a draft stay on the draft.
@@ -13,82 +22,76 @@
 	<title>{data.course.code} {data.course.title} | Library | Indy Center</title>
 </svelte:head>
 
-<nav class="text-sm text-gray-400">
-	<a href="/" class="hover:text-sky-300">Courses</a>
-</nav>
+<Breadcrumbs
+	class="mb-4"
+	items={[
+		{ href: '/', label: 'Courses' },
+		{ href: `/courses/${data.course.code}${q}`, label: `${data.course.code} ${data.course.title}` }
+	]}
+/>
 
 {#if data.version.isDraft}
-	<div class="mt-4">
-		<DraftBanner
-			number={data.version.number}
-			currentHref={data.hasCurrent ? `/courses/${data.course.code}` : null}
-		/>
-	</div>
+	<DraftBanner
+		number={data.version.number}
+		currentHref={data.hasCurrent ? `/courses/${data.course.code}` : null}
+	/>
 {/if}
 
-<header class="mt-2">
-	<div class="font-mono text-sm text-sky-300">{data.course.code}</div>
-	<h1 class="text-3xl font-bold text-white">{data.course.title}</h1>
-	<div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-gray-400">
-		<span>Version {data.version.number}</span>
-		{#if data.version.time}
-			<span class="flex items-center gap-1">
-				<IconClock class="h-4 w-4" aria-hidden="true" />
-				{duration(data.version.time)}
-			</span>
+<div class="font-mono text-sm text-muted-foreground">{data.course.code}</div>
+<PageHeader title={data.course.title}>
+	{#if data.version.description}{data.version.description}{/if}
+	{#snippet actions()}
+		{#if data.draft !== null}
+			<Button variant="secondary" size="sm" href="/courses/{data.course.code}?version=draft">
+				Read the draft, edition {data.draft}
+			</Button>
 		{/if}
-		{#if data.course.academyExam}
-			<span>VATUSA Academy {data.course.academyExam} exam required</span>
-		{/if}
-	</div>
-	{#if data.version.description}
-		<p class="mt-4 max-w-3xl text-gray-300">{data.version.description}</p>
-	{/if}
-	{#if data.draft !== null}
-		<a
-			href="/courses/{data.course.code}?version=draft"
-			class="mt-4 inline-flex items-center gap-2 rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-3 py-1.5 text-sm text-yellow-200 hover:bg-yellow-500/20"
-		>
-			Read the draft, version {data.draft}
-		</a>
-	{/if}
-</header>
+	{/snippet}
+</PageHeader>
 
-<div class="mt-8 space-y-6">
-	{#each data.modules as module, i (module.id)}
-		<section class="rounded-lg border border-slate-700/60 bg-slate-800/60">
-			<div class="border-b border-slate-700/60 px-5 py-4">
-				<h2 class="text-sm font-semibold tracking-wide text-gray-400 uppercase">
-					Module {i + 1}
-				</h2>
-				<div class="text-xl font-semibold text-white">{module.title}</div>
-				{#if module.description}
-					<p class="mt-1 text-sm text-gray-400">{module.description}</p>
-				{/if}
-			</div>
-			<ol class="divide-y divide-slate-700/60">
-				{#each module.lessonPlans as lp (lp.id)}
-					<li>
-						<a
-							href="/courses/{data.course.code}/lesson-plans/{lp.id}{q}"
-							class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-3 transition-colors duration-200 hover:bg-slate-700/40"
-						>
-							<span class="w-20 shrink-0 font-mono text-sm text-sky-300">{lp.code}</span>
-							<span class="flex-1 font-medium text-white">{lp.title}</span>
-							{#if lp.isExam}
-								<span class="flex items-center gap-1 text-xs text-orange-300">
-									<IconExam class="h-4 w-4" aria-hidden="true" /> Exam
-								</span>
-							{/if}
-							{#if lp.time}
-								<span class="text-sm text-gray-400">{duration(lp.time)}</span>
-							{/if}
-						</a>
-					</li>
-				{/each}
-			</ol>
-		</section>
-	{:else}
-		<p class="text-gray-400">This version has no modules yet.</p>
-	{/each}
+<div class="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+	<span>Edition {data.version.number}</span>
+	{#if data.version.time}
+		<span class="flex items-center gap-1">
+			<Icon path={mdiClockOutline} />
+			{duration(data.version.time)}
+		</span>
+	{/if}
+	{#if data.course.academyExam}
+		<span>VATUSA Academy {data.course.academyExam} exam required</span>
+	{/if}
 </div>
+
+{#each data.modules as module, i (module.id)}
+	<Panel title="Module {i + 1} · {module.title}" level={2} flush class="mt-8">
+		{#if module.description}
+			<Text size="small" class="px-4 py-3">{module.description}</Text>
+		{/if}
+		<ol class="divide-y divide-border">
+			{#each module.lessonPlans as lp (lp.id)}
+				<li>
+					<a
+						href="/courses/{data.course.code}/lesson-plans/{lp.id}{q}"
+						class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3 transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+					>
+						<span class="w-20 shrink-0 font-mono text-sm text-foreground-soft">{lp.code}</span>
+						<span class="flex-1 font-medium text-foreground">{lp.title}</span>
+						{#if lp.isExam}
+							<Badge variant="orange" size="sm">
+								{#snippet icon()}<Icon path={mdiClipboardCheckOutline} />{/snippet}
+								Exam
+							</Badge>
+						{/if}
+						{#if lp.time}
+							<span class="text-sm text-muted-foreground">{duration(lp.time)}</span>
+						{/if}
+					</a>
+				</li>
+			{/each}
+		</ol>
+	</Panel>
+{:else}
+	<EmptyState title="No modules yet" level={2} class="mt-8">
+		This edition has no modules yet.
+	</EmptyState>
+{/each}

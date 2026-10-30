@@ -21,7 +21,7 @@ Every page needs a session; there are no public pages.
 | Route                               | Shows                                                                                                            |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `/`                                 | Every course with a current version, plus drafts the reader may see                                              |
-| `/courses/{code}`                   | The current version: modules in order, each with its lesson plans                                                |
+| `/courses/{code}`                   | The current edition: modules in order, each with its lesson plans                                                |
 | `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered                             |
 | `/courses/{code}/scenarios/{id}`    | Airport, position, difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it |
 | `/tasks/{id}`                       | Number, name, description, place in the task tree, mapped competencies (inherited too), cited references         |
