@@ -140,6 +140,24 @@ export const sgcCurrent: CourseVersionDocument = {
 	]
 };
 
+// Scenario cases for the scenario page's browser check (ticket 10): a retired one, and one
+// with no difficulty. Only S-GC's draft offers them, so no published-version page changes.
+const retiredScenario: Scenario = {
+	...quietAfternoon,
+	id: 'scn-retired',
+	name: 'An old evening at Example Field',
+	difficulty: 'hard',
+	mode: 'live',
+	retired: true
+};
+
+const unratedScenario: Scenario = {
+	...quietAfternoon,
+	id: 'scn-unrated',
+	name: 'A foggy morning at Example Field',
+	difficulty: null
+};
+
 /** S-GC's next version, being written. */
 export const sgcDraft: CourseVersionDocument = {
 	...sgcCurrent,
@@ -147,7 +165,13 @@ export const sgcDraft: CourseVersionDocument = {
 	modules: [
 		{
 			...sgcCurrent.modules[0],
-			lessonPlans: [{ ...taxiBasics, title: 'Taxi basics, rewritten' }]
+			lessonPlans: [
+				{
+					...taxiBasics,
+					title: 'Taxi basics, rewritten',
+					scenarios: [quietAfternoon, retiredScenario, unratedScenario]
+				}
+			]
 		}
 	]
 };
