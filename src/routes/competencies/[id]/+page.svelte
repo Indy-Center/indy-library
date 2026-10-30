@@ -1,77 +1,104 @@
 <script lang="ts">
-	import { Panel } from '@indy-center/centerline-svelte';
-	import TaskLink from '$lib/components/TaskLink.svelte';
+	import {
+		Badge,
+		Breadcrumbs,
+		DescriptionList,
+		EmptyState,
+		PageHeader,
+		Panel,
+		Text
+	} from '@indy-center/centerline-svelte';
 
 	let { data } = $props();
 	let competency = $derived(data.competency);
+
+	let trail = $derived([
+		data.framework
+			? {
+					href: `/competencies?edition=${competency.frameworkId}`,
+					label: `${data.framework.name} ${data.framework.edition}`
+				}
+			: { href: '/competencies', label: 'Competencies' },
+		...(data.parent
+			? [
+					{
+						href: `/competencies/${data.parent.id}`,
+						label: `${data.parent.sourceId} ${data.parent.title}`
+					}
+				]
+			: []),
+		{
+			href: `/competencies/${competency.id}`,
+			label: `${competency.sourceId} ${competency.title}`
+		}
+	]);
+
+	const rowLink =
+		'flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring';
 </script>
 
 <svelte:head>
 	<title>{competency.sourceId} {competency.title} | Library | Indy Center</title>
 </svelte:head>
 
-<nav class="flex flex-wrap items-baseline gap-x-1 text-sm text-gray-400">
-	{#if data.framework}
-		<span>{data.framework.name} {data.framework.edition}</span>
-	{/if}
-	{#if data.parent}
-		<span>/</span>
-		<a href="/competencies/{data.parent.id}" class="hover:text-sky-300">
-			{data.parent.sourceId}
-			{data.parent.title}
-		</a>
-	{/if}
-</nav>
+<Breadcrumbs items={trail} label="Competency tree" class="mb-4" />
 
-<header class="mt-2">
-	<div class="font-mono text-sm text-sky-300">{competency.sourceId}</div>
-	<h1 class="text-3xl font-bold text-white">{competency.title}</h1>
-	{#if competency.text}
-		<p class="mt-4 max-w-3xl whitespace-pre-line text-gray-300">{competency.text}</p>
-	{/if}
-	<dl class="mt-4 flex flex-wrap gap-x-8 gap-y-2 text-sm">
+<div class="font-mono text-sm">{competency.sourceId}</div>
+
+{#if competency.text}
+	<PageHeader title={competency.title}>
+		<span class="whitespace-pre-line">{competency.text}</span>
+	</PageHeader>
+{:else}
+	<PageHeader title={competency.title} />
+{/if}
+
+{#if competency.sourceReference || competency.pairedGcapCode}
+	<DescriptionList class="mt-6">
 		{#if competency.sourceReference}
 			<div>
-				<dt class="text-xs tracking-wide text-gray-400 uppercase">Source reference</dt>
-				<dd class="text-gray-200">{competency.sourceReference}</dd>
+				<dt>Source reference</dt>
+				<dd>{competency.sourceReference}</dd>
 			</div>
 		{/if}
 		{#if competency.pairedGcapCode}
 			<div>
-				<dt class="text-xs tracking-wide text-gray-400 uppercase">Paired GCAP code</dt>
-				<dd class="font-mono text-gray-200">{competency.pairedGcapCode}</dd>
+				<dt>Paired GCAP code</dt>
+				<dd class="font-mono">{competency.pairedGcapCode}</dd>
 			</div>
 		{/if}
-	</dl>
-</header>
+	</DescriptionList>
+{/if}
 
 {#if data.rubric.theory || data.rubric.practical}
-	<Panel title="Rating exam rubric" level={2} flush class="mt-8">
-		<dl class="divide-y divide-slate-700/60">
+	<Panel title="Rating exam rubric" level={2} class="mt-8">
+		<DescriptionList>
 			{#if data.rubric.theory}
-				<div class="px-5 py-3">
-					<dt class="text-xs tracking-wide text-gray-400 uppercase">Theory</dt>
-					<dd class="mt-1 whitespace-pre-line text-gray-200">{data.rubric.theory}</dd>
+				<div>
+					<dt>Theory</dt>
+					<dd class="whitespace-pre-line">{data.rubric.theory}</dd>
 				</div>
 			{/if}
 			{#if data.rubric.practical}
-				<div class="px-5 py-3">
-					<dt class="text-xs tracking-wide text-gray-400 uppercase">Practical</dt>
-					<dd class="mt-1 whitespace-pre-line text-gray-200">{data.rubric.practical}</dd>
+				<div>
+					<dt>Practical</dt>
+					<dd class="whitespace-pre-line">{data.rubric.practical}</dd>
 				</div>
 			{/if}
-		</dl>
+		</DescriptionList>
 	</Panel>
 {/if}
 
 {#if data.children.length > 0}
 	<Panel title="Competencies beneath this one" level={2} flush class="mt-8">
-		<ul class="divide-y divide-slate-700/60">
+		<ul class="divide-y divide-border">
 			{#each data.children as child (child.id)}
-				<li class="px-5 py-3">
-					<a href="/competencies/{child.id}" class="group flex items-baseline gap-2">
-						<span class="font-mono text-sm text-sky-300">{child.sourceId}</span>
-						<span class="text-white group-hover:text-sky-200">{child.title}</span>
+				<li>
+					<a href="/competencies/{child.id}" class={rowLink}>
+						<span class="flex items-baseline gap-2">
+							<span class="font-mono text-sm">{child.sourceId}</span>
+							<span>{child.title}</span>
+						</span>
 					</a>
 				</li>
 			{/each}
@@ -81,16 +108,27 @@
 
 <Panel title="Taught by" level={2} flush class="mt-8">
 	{#if data.tasks.length === 0}
-		<p class="px-5 py-4 text-sm text-gray-400">No task is mapped to this competency yet.</p>
+		<EmptyState size="inline" class="px-5 py-4">
+			No task is mapped to this competency yet.
+		</EmptyState>
 	{:else}
-		<ul class="divide-y divide-slate-700/60">
+		<ul class="divide-y divide-border">
 			{#each data.tasks as mapped (mapped.task.id)}
-				<li class="flex flex-wrap items-baseline justify-between gap-2 px-5 py-3">
-					<TaskLink task={mapped.task} />
-					<span class="text-xs text-gray-400">
-						{#if mapped.retired}Retired.{/if}
-						{#if mapped.inheritedFrom}Through {mapped.inheritedFrom.number}{/if}
-					</span>
+				<li>
+					<a href="/tasks/{mapped.task.id}" class={rowLink}>
+						<span class="flex items-baseline gap-2">
+							<span class="font-mono text-sm">{mapped.task.number}</span>
+							<span>{mapped.task.name}</span>
+						</span>
+						{#if mapped.retired || mapped.inheritedFrom}
+							<span class="flex items-baseline gap-2">
+								{#if mapped.retired}<Badge size="sm" variant="gray">Retired</Badge>{/if}
+								{#if mapped.inheritedFrom}
+									<Text as="span" size="small">Through {mapped.inheritedFrom.number}</Text>
+								{/if}
+							</span>
+						{/if}
+					</a>
 				</li>
 			{/each}
 		</ul>

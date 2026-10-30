@@ -468,6 +468,18 @@ export const catalogue: Catalogue = {
 			retired: true,
 			mappings: [],
 			citations: []
+		},
+		// Competency page case (library-centerline 14): a retired task that teaches
+		// `comp-gcap-move` (the others there are live), for the "Retired" badge.
+		{
+			id: 'task-retired-strip',
+			number: '4',
+			name: 'Mark a flight strip',
+			description: '',
+			parentId: null,
+			retired: true,
+			mappings: [{ competencyId: 'comp-gcap-move', fromTaskId: 'task-retired-strip' }],
+			citations: []
 		}
 	]
 };
