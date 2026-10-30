@@ -38,7 +38,7 @@
 <div class="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
 	<span>Scenario</span>
 	{#if scenario.retired}
-		<Badge size="sm" variant="gray">Retired</Badge>
+		<Badge size="sm" variant="gray" pill>Retired</Badge>
 	{/if}
 </div>
 <PageHeader title={scenario.name} />
@@ -70,11 +70,11 @@
 
 <Panel title="Practical tasks" level={2} flush class="mt-8">
 	{#if data.practicalTasks.length === 0}
-		<EmptyState size="inline" class="px-5 py-4">This scenario has no practical tasks.</EmptyState>
+		<EmptyState size="inline" class="px-4 py-4">This scenario has no practical tasks.</EmptyState>
 	{:else}
 		<ol class="divide-y divide-border">
 			{#each data.practicalTasks as pt (pt.id)}
-				<li class="px-5 py-3">
+				<li class="px-4 py-3">
 					<div class="flex flex-wrap items-baseline justify-between gap-2">
 						<TaskLink task={pt.task} />
 						{#if pt.required}
@@ -99,7 +99,7 @@
 				<li>
 					<a
 						href="/courses/{data.course.code}/lesson-plans/{lp.id}{q}"
-						class="flex items-baseline gap-4 px-5 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+						class="flex items-baseline gap-4 px-4 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
 					>
 						<span class="w-20 shrink-0 font-mono text-sm">{lp.code}</span>
 						<span>{lp.title}</span>
