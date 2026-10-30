@@ -57,10 +57,21 @@ describe('/courses/[code]/lesson-plans/[id]', () => {
 				id: 'scn-quiet',
 				name: 'A quiet afternoon at Example Field',
 				airport: 'KXMP',
-				position: 'XMP_GND',
+				studentPosition: { id: 'pos-xmp-gnd', callsign: 'XMP_GND', retired: false },
 				difficulty: 'Easy',
 				mode: 'sim'
 			}
+		]);
+	});
+
+	it("hands each scenario's student position to Position, with whether it is retired", async () => {
+		// A-LC's scenarios: no short name, retired, and a position the catalogue lacks.
+		const data = await lessonPlan(library(), 'lp-runway', 'A-LC');
+
+		expect(data.scenarios.map((s) => [s.id, s.studentPosition])).toEqual([
+			['scn-tower-day', { id: 'pos-xmp-twr', callsign: 'XMP_TWR', retired: false }],
+			['scn-old-delivery', { id: 'pos-xmp-del', callsign: 'XMP_DEL', retired: true }],
+			['scn-lost-position', { id: 'pos-xmp-app', callsign: 'XMP_APP', retired: false }]
 		]);
 	});
 

@@ -3,10 +3,12 @@ import type { SessionContext } from '@indy-center/identity';
 import { CmsUnavailableError } from '$lib/server/cms';
 import { isTrainingStaff } from '$lib/permissions';
 import type {
+	CataloguePosition,
 	CourseSummary,
 	CourseVersionDocument,
 	LessonPlan,
 	Scenario,
+	ScenarioPosition,
 	TaskRef
 } from '$lib/server/cms/types';
 
@@ -145,6 +147,41 @@ const DIFFICULTIES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as const;
 /** A scenario's difficulty as the page shows it: Easy, Medium, Hard, or nothing. */
 export function difficultyLabel(difficulty: Scenario['difficulty']): string {
 	return difficulty ? DIFFICULTIES[difficulty] : '';
+}
+
+/**
+ * The catalogue's positions, for Centerline's `Position` to look scenario positions up in
+ * (decision 0060). When the CMS cannot be read and no copy is kept, there are none, as
+ * Centerline's positions lookup asks: every position then shows its callsign alone, and the
+ * page still renders.
+ */
+export async function cataloguePositions(locals: App.Locals): Promise<CataloguePosition[]> {
+	try {
+		return (await locals.cms.catalogue()).positions;
+	} catch (err) {
+		if (err instanceof CmsUnavailableError) {
+			console.error('[indy-library] no positions:', err);
+			return [];
+		}
+		throw err;
+	}
+}
+
+/**
+ * A scenario's position as the page hands it to `Position`: the vNAS id (its `positionId`) and
+ * callsign the scenario names, and whether the catalogue marks it retired. A position the
+ * catalogue lacks is not retired; `Position` shows its callsign alone.
+ */
+export type ShownPosition = ScenarioPosition & { retired: boolean };
+
+/** Turns a scenario's positions into what the page shows, looked up in the catalogue's. */
+export async function positionsShown(
+	locals: App.Locals
+): Promise<(position: ScenarioPosition) => ShownPosition> {
+	const retired = new Set(
+		(await cataloguePositions(locals)).filter((p) => p.retired).map((p) => p.id)
+	);
+	return ({ id, callsign }) => ({ id, callsign, retired: retired.has(id) });
 }
 
 /** A task as a link to its page shows it. */

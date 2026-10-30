@@ -7,7 +7,9 @@
 		Icon,
 		PageHeader,
 		Panel,
-		Prose
+		Position,
+		Prose,
+		Text
 	} from '@indy-center/centerline-svelte';
 	import { mdiClockOutline } from '@mdi/js';
 	import TaskLink from '$lib/components/TaskLink.svelte';
@@ -100,7 +102,16 @@
 						class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
 					>
 						<span class="flex-1 font-medium">{scenario.name}</span>
-						<span class="font-mono text-sm text-foreground-soft">{scenario.position}</span>
+						<span
+							><Position
+								callsign={scenario.studentPosition.callsign}
+								positionId={scenario.studentPosition.id}
+								show={['shortName', 'name']}
+								layout="inline"
+							/>{#if scenario.studentPosition.retired}{' '}<Text as="span" tone="muted"
+									>(retired)</Text
+								>{/if}</span
+						>
 						{#if scenario.difficulty}
 							<span class="text-sm text-muted-foreground">{scenario.difficulty}</span>
 						{/if}

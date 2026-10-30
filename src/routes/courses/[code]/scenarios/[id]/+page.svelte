@@ -6,13 +6,19 @@
 		DescriptionList,
 		EmptyState,
 		PageHeader,
-		Panel
+		Panel,
+		Position,
+		Text
 	} from '@indy-center/centerline-svelte';
 	import ModeBadge from '$lib/components/ModeBadge.svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
 	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
+	import type { PageData } from './$types';
+
+	/** A position as the load hands it over: the vNAS id and callsign, and whether it is retired. */
+	type ShownPosition = PageData['scenario']['studentPosition'];
 
 	let { data } = $props();
 	// Pages beneath a draft stay on the draft.
@@ -28,6 +34,17 @@
 <svelte:head>
 	<title>{scenario.name} | Library | Indy Center</title>
 </svelte:head>
+
+<!-- By short name and name, as controllers know it; a position the catalogue lacks shows its
+     callsign alone. -->
+{#snippet position(p: ShownPosition)}
+	<Position
+		callsign={p.callsign}
+		positionId={p.id}
+		show={['shortName', 'name']}
+		layout="inline"
+	/>{#if p.retired}{' '}<Text as="span" tone="muted">(retired)</Text>{/if}
+{/snippet}
 
 <Breadcrumbs items={crumbs} />
 
@@ -50,7 +67,11 @@
 	</div>
 	<div>
 		<dt>Student position</dt>
-		<dd class="font-mono">{scenario.position}</dd>
+		<dd>{@render position(scenario.studentPosition)}</dd>
+	</div>
+	<div>
+		<dt>Teacher position</dt>
+		<dd>{@render position(scenario.teacherPosition)}</dd>
 	</div>
 	{#if scenario.difficulty}
 		<div>

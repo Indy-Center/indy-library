@@ -4,6 +4,7 @@ import {
 	findScenario,
 	hasTeacherNotes,
 	maySeeTeacherNotes,
+	positionsShown,
 	taskRef,
 	teacherNotes,
 	versionOf
@@ -17,6 +18,8 @@ export const load = (async ({ locals, params, url }) => {
 	const { scenario, offeredBy } = findScenario(doc, params.id);
 	const showsTeacherNotes =
 		hasTeacherNotes(scenario.practicalTasks) && (await maySeeTeacherNotes(locals, doc.course.code));
+	// The same catalogue read as the root layout's positions: the CMS client reads it once a request.
+	const shown = await positionsShown(locals);
 
 	return {
 		course: { code: doc.course.code, title: doc.course.title },
@@ -25,7 +28,8 @@ export const load = (async ({ locals, params, url }) => {
 			id: scenario.id,
 			name: scenario.name,
 			airport: scenario.airport,
-			position: scenario.studentPosition.callsign,
+			studentPosition: shown(scenario.studentPosition),
+			teacherPosition: shown(scenario.teacherPosition),
 			difficulty: difficultyLabel(scenario.difficulty),
 			mode: scenario.mode,
 			retired: scenario.retired

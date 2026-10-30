@@ -6,6 +6,7 @@
 		Header,
 		INDY_CENTER_APPS,
 		setColorScheme,
+		setPositions,
 		setTimeZone,
 		type FooterColumn,
 		type NavItem
@@ -18,6 +19,8 @@
 	setColorScheme({ fallback: 'dark' });
 	// No saveToProfile: identity holds no time zone yet (identity time-zone 01).
 	setTimeZone(() => data.timeZone);
+	// Every Position below looks itself up in the catalogue's positions.
+	setPositions(() => data.positions);
 
 	const app = INDY_CENTER_APPS.find((app) => app.label === 'Library');
 
