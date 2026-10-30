@@ -198,6 +198,14 @@ from the shell (`process.env`), not `.dev.vars`. The preview only runs under
 pnpm format:check && pnpm build && pnpm check && pnpm test
 ```
 
+`check` runs `scripts/check-style.mjs` first (no raw palette colours or
+hex/rgb/hsl colours, no `label=` on `Breadcrumbs`, no `px-5` inside a `Panel`),
+then `svelte-check`.
+
+The pre-commit hook runs lint-staged (Prettier) and `pnpm test`, not `pnpm
+check`: that made commits slow. CI still runs it, so a type or style slip shows
+on the pull request; run `pnpm check` yourself before pushing.
+
 `build` comes before `check`, as in training-tools. CI runs exactly these on
 every pull request (`.github/workflows/ci.yml`). Each push to `main` runs them
 again and, if they pass, deploys the Worker
