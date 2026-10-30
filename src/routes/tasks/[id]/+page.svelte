@@ -51,7 +51,7 @@
 	<Panel title="Tasks beneath this one" level={2} flush class="mt-8">
 		<ul class="divide-y divide-border">
 			{#each data.children as child (child.id)}
-				<li class="px-5 py-3"><TaskLink task={child} /></li>
+				<li class="px-4 py-3"><TaskLink task={child} /></li>
 			{/each}
 		</ul>
 	</Panel>
@@ -59,13 +59,13 @@
 
 <Panel title="Competencies" level={2} flush class="mt-8">
 	{#if data.mappings.length === 0}
-		<EmptyState size="inline" class="px-5 py-4">
+		<EmptyState size="inline" class="px-4 py-4">
 			This task is not mapped to a competency yet.
 		</EmptyState>
 	{:else}
 		<ul class="divide-y divide-border">
 			{#each data.mappings as mapping (mapping.competency.id)}
-				<li class="px-5 py-3">
+				<li class="px-4 py-3">
 					<Text size="small">{mapping.framework.name} {mapping.framework.edition}</Text>
 					<Link
 						href="/competencies/{mapping.competency.id}"
@@ -93,7 +93,7 @@
 	<Panel title="Sources" level={2} flush class="mt-8">
 		<ul class="divide-y divide-border">
 			{#each data.citations as citation, i (i)}
-				<li class="px-5 py-3">
+				<li class="px-4 py-3">
 					{#if citation.url}
 						<Link href={citation.url} target="_blank" rel="noopener noreferrer">
 							{citation.name}

@@ -34,7 +34,7 @@
 	]);
 
 	const rowLink =
-		'flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring';
+		'flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-4 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring';
 </script>
 
 <svelte:head>
@@ -108,7 +108,7 @@
 
 <Panel title="Taught by" level={2} flush class="mt-8">
 	{#if data.tasks.length === 0}
-		<EmptyState size="inline" class="px-5 py-4">
+		<EmptyState size="inline" class="px-4 py-4">
 			No task is mapped to this competency yet.
 		</EmptyState>
 	{:else}

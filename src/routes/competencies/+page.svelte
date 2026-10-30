@@ -71,6 +71,6 @@
 			</ul>
 		</Disclosure>
 	{:else}
-		<EmptyState size="inline" class="px-5 py-4">This edition has no competencies yet.</EmptyState>
+		<EmptyState size="inline" class="px-4 py-4">This edition has no competencies yet.</EmptyState>
 	{/each}
 </Card>

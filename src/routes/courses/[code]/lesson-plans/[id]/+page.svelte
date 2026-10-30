@@ -73,11 +73,11 @@
 
 <Panel title="Theory items" level={2} flush class="mt-8">
 	{#if data.theoryItems.length === 0}
-		<EmptyState size="inline" class="px-5 py-4">This lesson plan has no theory items.</EmptyState>
+		<EmptyState size="inline" class="px-4 py-4">This lesson plan has no theory items.</EmptyState>
 	{:else}
 		<ol class="divide-y divide-border">
 			{#each data.theoryItems as item (item.id)}
-				<li class="px-5 py-3">
+				<li class="px-4 py-3">
 					<TaskLink task={item.task} />
 					{#if item.teacherNotes}
 						<TeacherNotes notes={item.teacherNotes} />
@@ -90,14 +90,14 @@
 
 <Panel title="Scenarios offered" level={2} flush class="mt-8">
 	{#if data.scenarios.length === 0}
-		<EmptyState size="inline" class="px-5 py-4">This lesson plan offers no scenarios.</EmptyState>
+		<EmptyState size="inline" class="px-4 py-4">This lesson plan offers no scenarios.</EmptyState>
 	{:else}
 		<ul class="divide-y divide-border">
 			{#each data.scenarios as scenario (scenario.id)}
 				<li>
 					<a
 						href="/courses/{data.course.code}/scenarios/{scenario.id}{q}"
-						class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-5 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+						class="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-4 py-3 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
 					>
 						<span class="flex-1 font-medium">{scenario.name}</span>
 						<span class="font-mono text-sm text-foreground-soft">{scenario.position}</span>
