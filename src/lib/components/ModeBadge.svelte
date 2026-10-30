@@ -1,11 +1,10 @@
+<!-- Whether a scenario is run live or on the sim. -->
 <script lang="ts">
+	import { Badge } from '@indy-center/centerline-svelte';
+
 	let { mode }: { mode: 'live' | 'sim' } = $props();
 </script>
 
-<span
-	class="rounded-lg border px-2 py-0.5 text-xs font-medium {mode === 'live'
-		? 'border-green-500/30 bg-green-500/10 text-green-300'
-		: 'border-sky-500/30 bg-sky-500/10 text-sky-300'}"
->
+<Badge size="sm" variant={mode === 'live' ? 'green' : 'sky'}>
 	{mode === 'live' ? 'Live' : 'Sim'}
-</span>
+</Badge>
