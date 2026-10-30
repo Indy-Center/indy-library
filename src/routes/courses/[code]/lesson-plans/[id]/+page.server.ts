@@ -23,6 +23,7 @@ export const load = (async ({ locals, params, url }) => {
 		module: { title: module.title },
 		lessonPlan: {
 			id: lessonPlan.id,
+			moduleNumber: doc.modules.indexOf(module) + 1,
 			code: lessonPlan.code,
 			title: lessonPlan.title,
 			description: lessonPlan.description,

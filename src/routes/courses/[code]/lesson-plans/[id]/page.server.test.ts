@@ -26,6 +26,12 @@ describe('/courses/[code]/lesson-plans/[id]', () => {
 		});
 	});
 
+	it("numbers the lesson plan's module by its place in the course", async () => {
+		const data = await lessonPlan(library(), 'lp-taxi');
+
+		expect(data.lessonPlan.moduleNumber).toBe(1);
+	});
+
 	it('lists its theory items in order, each with its task number and name', async () => {
 		const data = await lessonPlan(library(), 'lp-taxi');
 
