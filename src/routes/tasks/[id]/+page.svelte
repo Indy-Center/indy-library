@@ -29,7 +29,7 @@
 </svelte:head>
 
 {#if trail.length > 0}
-	<Breadcrumbs items={trail} label="Task tree" class="mb-4" />
+	<Breadcrumbs items={trail} class="mb-4" />
 {/if}
 
 <div class="flex items-center gap-3">
