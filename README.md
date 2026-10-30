@@ -11,8 +11,9 @@ The courseware is written by training staff in the CMS (Payload, at
 `cms.flyindycenter.com`). This app only reads it; nothing is written here, and
 no student data passes through it.
 
-SvelteKit on Cloudflare Workers, with Svelte 5, Tailwind v4 and the same look
-and conventions as [training-tools](https://github.com/Indy-Center/training-tools).
+SvelteKit on Cloudflare Workers, with Svelte 5 and Tailwind v4. The look is
+[Indy Centerline](https://centerline.flyindycenter.com), Indy Center's design
+system (see Centerline below).
 
 ## Pages
 
@@ -20,13 +21,13 @@ Every page needs a session; there are no public pages.
 
 | Route                               | Shows                                                                                                                                                                                      |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/`                                 | Every course with a current version, plus drafts the reader may see                                                                                                                        |
+| `/`                                 | A card for every course with a current edition, plus drafts the reader may see                                                                                                             |
 | `/courses/{code}`                   | The current edition: its facts (enrolment, Academy exam, length, consolidation, rating exam, credential earned, Moodle), modules in order with their lesson plans, the completion standard |
 | `/courses/{code}/lesson-plans/{id}` | Body, time, code, exam flag, minimum grade, theory items in order, scenarios offered                                                                                                       |
-| `/courses/{code}/scenarios/{id}`    | Airport, position, difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it                                                                           |
-| `/tasks/{id}`                       | Number, name, description, place in the task tree, mapped competencies (inherited too), cited sources                                                                                      |
+| `/courses/{code}/scenarios/{id}`    | Airport, student position, difficulty, live or sim, practical tasks (required or optional), the lesson plans offering it                                                                   |
+| `/tasks/{id}`                       | Number, name, description, place in the task tree, tasks beneath it, mapped competencies (inherited too), Sources                                                                          |
 | `/competencies`                     | A tab per framework edition (`?edition=`), each top-level competency folded over everything beneath it                                                                                     |
-| `/competencies/{id}`                | Text, framework edition, rubric wording, and every task mapped to it                                                                                                                       |
+| `/competencies/{id}`                | Text, source reference, rubric wording, the competencies beneath it, and every task mapped to it                                                                                           |
 
 Add `?version=draft` to any `/courses/...` page to read the course's draft
 instead. Pages beneath a draft keep it in their links, and every draft page is
