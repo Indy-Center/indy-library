@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ModeBadge from '$lib/components/ModeBadge.svelte';
-	import Section from '$lib/components/Section.svelte';
+	import { Badge, Panel } from '@indy-center/centerline-svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
 	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
@@ -33,11 +33,7 @@
 	<div class="flex items-center gap-3">
 		<span class="text-sm text-sky-300">Scenario</span>
 		{#if scenario.retired}
-			<span
-				class="rounded-lg border border-gray-500/30 bg-gray-500/10 px-2 py-0.5 text-xs text-gray-300"
-			>
-				Retired
-			</span>
+			<Badge size="sm" variant="gray">Retired</Badge>
 		{/if}
 	</div>
 	<h1 class="text-3xl font-bold text-white">{scenario.name}</h1>
@@ -65,7 +61,7 @@
 	<TeacherNotesNotice />
 {/if}
 
-<Section title="Practical tasks">
+<Panel title="Practical tasks" level={2} flush class="mt-8">
 	{#if data.practicalTasks.length === 0}
 		<p class="px-5 py-4 text-sm text-gray-400">This scenario has no practical tasks.</p>
 	{:else}
@@ -87,10 +83,10 @@
 			{/each}
 		</ol>
 	{/if}
-</Section>
+</Panel>
 
 {#if data.offeredBy.length > 0}
-	<Section title="Offered by">
+	<Panel title="Offered by" level={2} flush class="mt-8">
 		<ul class="divide-y divide-slate-700/60">
 			{#each data.offeredBy as lp (lp.id)}
 				<li>
@@ -104,5 +100,5 @@
 				</li>
 			{/each}
 		</ul>
-	</Section>
+	</Panel>
 {/if}

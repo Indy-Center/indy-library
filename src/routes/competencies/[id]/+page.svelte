@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Section from '$lib/components/Section.svelte';
+	import { Panel } from '@indy-center/centerline-svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 
 	let { data } = $props();
@@ -46,7 +46,7 @@
 </header>
 
 {#if data.rubric.theory || data.rubric.practical}
-	<Section title="Rating exam rubric">
+	<Panel title="Rating exam rubric" level={2} flush class="mt-8">
 		<dl class="divide-y divide-slate-700/60">
 			{#if data.rubric.theory}
 				<div class="px-5 py-3">
@@ -61,11 +61,11 @@
 				</div>
 			{/if}
 		</dl>
-	</Section>
+	</Panel>
 {/if}
 
 {#if data.children.length > 0}
-	<Section title="Competencies beneath this one">
+	<Panel title="Competencies beneath this one" level={2} flush class="mt-8">
 		<ul class="divide-y divide-slate-700/60">
 			{#each data.children as child (child.id)}
 				<li class="px-5 py-3">
@@ -76,10 +76,10 @@
 				</li>
 			{/each}
 		</ul>
-	</Section>
+	</Panel>
 {/if}
 
-<Section title="Taught by">
+<Panel title="Taught by" level={2} flush class="mt-8">
 	{#if data.tasks.length === 0}
 		<p class="px-5 py-4 text-sm text-gray-400">No task is mapped to this competency yet.</p>
 	{:else}
@@ -95,4 +95,4 @@
 			{/each}
 		</ul>
 	{/if}
-</Section>
+</Panel>

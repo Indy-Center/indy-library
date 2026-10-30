@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { duration } from '$lib/format';
-	import Section from '$lib/components/Section.svelte';
+	import { Panel } from '@indy-center/centerline-svelte';
 	import TaskLink from '$lib/components/TaskLink.svelte';
 	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
 	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
@@ -67,7 +67,7 @@
 	<TeacherNotesNotice />
 {/if}
 
-<Section title="Theory items">
+<Panel title="Theory items" level={2} flush class="mt-8">
 	{#if data.theoryItems.length === 0}
 		<p class="px-5 py-4 text-sm text-gray-400">This lesson plan has no theory items.</p>
 	{:else}
@@ -82,9 +82,9 @@
 			{/each}
 		</ol>
 	{/if}
-</Section>
+</Panel>
 
-<Section title="Scenarios offered">
+<Panel title="Scenarios offered" level={2} flush class="mt-8">
 	{#if data.scenarios.length === 0}
 		<p class="px-5 py-4 text-sm text-gray-400">This lesson plan offers no scenarios.</p>
 	{:else}
@@ -104,4 +104,4 @@
 			{/each}
 		</ul>
 	{/if}
-</Section>
+</Panel>
