@@ -70,12 +70,14 @@
 </div>
 
 {#snippet credential(c: (typeof data.facts.prerequisites)[number][number])}
-	{#if c.name !== null && c.kind !== null}
-		<Credential code={c.code} name={c.name} kind={c.kind} focusable />
-	{:else}
-		<Chip>{c.code}</Chip>
-	{/if}
-	{#if c.retired}<Text as="span" tone="muted">(retired)</Text>{/if}
+	{#if c.name !== null && c.kind !== null}<Credential
+			code={c.code}
+			name={c.name}
+			kind={c.kind}
+			focusable
+		/>{:else}<Chip>{c.code}</Chip>{/if}{#if c.retired}{' '}<Text as="span" tone="muted"
+			>(retired)</Text
+		>{/if}
 {/snippet}
 
 <!-- The course facts block. Each row shows only when its fact is set; with no row, no block.
@@ -88,8 +90,7 @@
 				{#each data.facts.prerequisites as row, r (r)}
 					<dd>
 						{#each row as c, i (c.code)}
-							{#if i > 0}, or
-							{/if}{@render credential(c)}
+							{#if i > 0}{', or '}{/if}{@render credential(c)}
 						{/each}
 					</dd>
 				{/each}
