@@ -10,6 +10,7 @@
 		DescriptionList,
 		EmptyState,
 		Icon,
+		Link,
 		PageHeader,
 		Panel,
 		Text
@@ -18,9 +19,15 @@
 
 	let { data } = $props();
 	// Pages beneath a draft stay on the draft.
-	// 08 adds its own facts to this test.
 	let hasFacts = $derived(
-		data.facts.prerequisites.length > 0 || Boolean(data.facts.note) || Boolean(data.facts.issues)
+		data.facts.prerequisites.length > 0 ||
+			Boolean(data.facts.note) ||
+			Boolean(data.facts.issues) ||
+			Boolean(data.facts.academyExam) ||
+			Boolean(data.facts.estimatedWeeks) ||
+			Boolean(data.facts.consolidation) ||
+			Boolean(data.facts.ratingExam) ||
+			Boolean(data.facts.moodleUrl)
 	);
 	let q = $derived(data.version.isDraft ? '?version=draft' : '');
 </script>
@@ -64,9 +71,6 @@
 			{duration(data.version.time)}
 		</span>
 	{/if}
-	{#if data.course.academyExam}
-		<span>VATUSA Academy {data.course.academyExam} exam required</span>
-	{/if}
 </div>
 
 {#snippet credential(c: (typeof data.facts.prerequisites)[number][number])}
@@ -81,7 +85,7 @@
 {/snippet}
 
 <!-- The course facts block. Each row shows only when its fact is set; with no row, no block.
-	Rows are numbered as in ticket 08's order; 08 adds rows 2 to 5 where marked. -->
+	Rows follow the CMS Details tab's order. -->
 {#if hasFacts}
 	<DescriptionList class="mt-6">
 		{#if data.facts.prerequisites.length > 0 || data.facts.note}
@@ -97,11 +101,47 @@
 				{#if data.facts.note}<dd>{data.facts.note}</dd>{/if}
 			</div>
 		{/if}
-		<!-- Rows 2 to 5 (ticket 08) go here. -->
+		{#if data.facts.academyExam}
+			<div>
+				<dt>Before you start</dt>
+				<dd>VATUSA Academy {data.facts.academyExam} exam</dd>
+			</div>
+		{/if}
+		{#if data.facts.estimatedWeeks}
+			{@const weeks = data.facts.estimatedWeeks}
+			<div>
+				<dt>Estimated length</dt>
+				<dd>
+					{weeks.min === weeks.max ? `${weeks.min} weeks` : `${weeks.min}–${weeks.max} weeks`}
+				</dd>
+			</div>
+		{/if}
+		{#if data.facts.consolidation}
+			<div>
+				<dt>Consolidation</dt>
+				<dd>
+					{data.facts.consolidation.hours} hours on {data.facts.consolidation.positionTypes.join(
+						' or '
+					)}
+				</dd>
+			</div>
+		{/if}
+		{#if data.facts.ratingExam}
+			<div>
+				<dt>Ends in</dt>
+				<dd>the {data.facts.ratingExam} rating exam</dd>
+			</div>
+		{/if}
 		{#if data.facts.issues}
 			<div>
 				<dt>Finishing earns</dt>
 				<dd>{@render credential(data.facts.issues)}</dd>
+			</div>
+		{/if}
+		{#if data.facts.moodleUrl}
+			<div>
+				<dt>Taken on</dt>
+				<dd><Link href={data.facts.moodleUrl}>Moodle</Link></dd>
 			</div>
 		{/if}
 	</DescriptionList>
@@ -140,3 +180,9 @@
 		This edition has no modules yet.
 	</EmptyState>
 {/each}
+
+{#if data.version.completionStandard}
+	<Panel title="Completion standard" level={2} class="mt-8">
+		<Text class="whitespace-pre-line">{data.version.completionStandard}</Text>
+	</Panel>
+{/if}

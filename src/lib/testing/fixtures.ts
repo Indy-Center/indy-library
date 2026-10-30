@@ -129,7 +129,13 @@ export const sgcCurrent: CourseVersionDocument = {
 		prerequisites: [{ anyOf: ['X-OBS', 'X-OLD'] }, { anyOf: ['X-GONE'] }],
 		credentialIssued: 'S-GC'
 	},
-	version: { id: 'ver-sgc-1', number: 1, ...version },
+	// Ticket 08: a standard of two lines.
+	version: {
+		id: 'ver-sgc-1',
+		number: 1,
+		...version,
+		completionStandard: 'Pass every lesson plan.\nThen sit the made-up review.'
+	},
 	scale: { id: 'scale-1', name: 'Three points', points: POINTS },
 	defaultMinimum: POINTS[1],
 	modules: [
@@ -163,7 +169,14 @@ const unratedScenario: Scenario = {
 /** S-GC's next version, being written. */
 export const sgcDraft: CourseVersionDocument = {
 	...sgcCurrent,
-	version: { ...sgcCurrent.version, id: 'ver-sgc-2', number: 2, status: 'draft' },
+	version: {
+		...sgcCurrent.version,
+		id: 'ver-sgc-2',
+		number: 2,
+		status: 'draft',
+		// Ticket 08: differs from the current edition's.
+		completionStandard: 'Pass every lesson plan, rewritten.'
+	},
 	modules: [
 		{
 			...sgcCurrent.modules[0],
@@ -180,7 +193,14 @@ export const sgcDraft: CourseVersionDocument = {
 
 export const alcCurrent: CourseVersionDocument = {
 	course: { id: 'course-alc', code: 'A-LC', title: 'Local Control', authors: [], ...noFacts },
-	version: { id: 'ver-alc-1', number: 1, ...version, description: 'The made-up tower course.' },
+	version: {
+		id: 'ver-alc-1',
+		number: 1,
+		...version,
+		description: 'The made-up tower course.',
+		// Ticket 08: blank, so the page shows no completion standard.
+		completionStandard: ''
+	},
 	scale: { id: 'scale-1', name: 'Three points', points: POINTS },
 	defaultMinimum: POINTS[1],
 	modules: [
@@ -219,7 +239,9 @@ export const xnewDraft: CourseVersionDocument = {
 		code: 'X-NEW',
 		title: 'Unreleased Course',
 		authors: [AUTHOR_CID],
-		...noFacts
+		...noFacts,
+		// Ticket 08: equal minimum and maximum weeks.
+		estimatedWeeks: { min: 6, max: 6 }
 	},
 	version: { id: 'ver-xnew-1', number: 1, ...version, status: 'draft' },
 	scale: null,

@@ -27,17 +27,24 @@ export const load = (async ({ locals, params, url }) => {
 	return {
 		course: {
 			code: doc.course.code,
-			title: doc.course.title,
-			academyExam: doc.course.academyExam
+			title: doc.course.title
 		},
 		version: {
 			...versionOf(doc),
 			description: doc.version.description,
-			time: doc.version.time
+			time: doc.version.time,
+			// As written, line breaks kept; null when blank.
+			completionStandard: doc.version.completionStandard.trim()
+				? doc.version.completionStandard
+				: null
 		},
-		// The course's facts block (the same on the current edition and the draft). Ticket 08 adds its
-		// other facts here.
+		// The course's facts block (the same on the current edition and the draft).
 		facts: {
+			academyExam: doc.course.academyExam,
+			estimatedWeeks: doc.course.estimatedWeeks,
+			consolidation: doc.course.consolidation,
+			ratingExam: doc.course.ratingExam,
+			moodleUrl: doc.course.moodleUrl,
 			prerequisites: doc.course.prerequisites.map((row) => row.anyOf.map(credential)),
 			note: doc.course.prerequisitesNote.trim() ? doc.course.prerequisitesNote : null,
 			issues: doc.course.credentialIssued ? credential(doc.course.credentialIssued) : null

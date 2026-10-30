@@ -43,7 +43,50 @@ describe('/courses/[code] facts', () => {
 	it('holds nothing for a course that sets none', async () => {
 		const { facts } = await page('/courses/A-LC', 'A-LC');
 
-		expect(facts).toEqual({ prerequisites: [], note: null, issues: null });
+		expect(facts).toEqual({
+			prerequisites: [],
+			note: null,
+			issues: null,
+			academyExam: null,
+			estimatedWeeks: null,
+			consolidation: null,
+			ratingExam: null,
+			moodleUrl: null
+		});
+	});
+
+	it('gives every fact a course sets, and the completion standard as written', async () => {
+		const { facts, version } = await page('/courses/S-GC', 'S-GC');
+
+		expect(facts).toMatchObject({
+			academyExam: 'S2',
+			estimatedWeeks: { min: 4, max: 8 },
+			consolidation: { hours: 10, positionTypes: ['DEL', 'GND'] },
+			ratingExam: 'S1',
+			moodleUrl: 'https://moodle.example.com/course/1'
+		});
+		expect(version.completionStandard).toBe(
+			'Pass every lesson plan.\nThen sit the made-up review.'
+		);
+	});
+
+	it('gives equal weeks as min and max alike', async () => {
+		const { facts } = await page('/courses/X-NEW?version=draft', 'X-NEW', session(AUTHOR_CID));
+
+		expect(facts.estimatedWeeks).toEqual({ min: 6, max: 6 });
+	});
+
+	it('sends no completion standard when it is blank', async () => {
+		const { version } = await page('/courses/A-LC', 'A-LC');
+
+		expect(version.completionStandard).toBeNull();
+	});
+
+	it("shows the draft's own completion standard and the estimated length", async () => {
+		const draft = await page('/courses/S-GC?version=draft', 'S-GC', session(AUTHOR_CID));
+
+		expect(draft.version.completionStandard).toBe('Pass every lesson plan, rewritten.');
+		expect(draft.facts.estimatedWeeks).toEqual({ min: 4, max: 8 });
 	});
 
 	it('sends only what the page draws', async () => {
