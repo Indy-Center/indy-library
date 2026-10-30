@@ -35,7 +35,7 @@
 <div class="flex items-center gap-3">
 	<span class="font-mono text-sm">Task {data.task.number}</span>
 	{#if data.task.retired}
-		<Badge size="sm" variant="gray">Retired</Badge>
+		<Badge size="sm" variant="gray" pill>Retired</Badge>
 	{/if}
 </div>
 

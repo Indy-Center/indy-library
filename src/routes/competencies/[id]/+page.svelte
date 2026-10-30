@@ -122,7 +122,7 @@
 						</span>
 						{#if mapped.retired || mapped.inheritedFrom}
 							<span class="flex items-baseline gap-2">
-								{#if mapped.retired}<Badge size="sm" variant="gray">Retired</Badge>{/if}
+								{#if mapped.retired}<Badge size="sm" variant="gray" pill>Retired</Badge>{/if}
 								{#if mapped.inheritedFrom}
 									<Text as="span" size="small">Through {mapped.inheritedFrom.number}</Text>
 								{/if}

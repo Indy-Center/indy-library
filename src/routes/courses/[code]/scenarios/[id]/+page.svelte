@@ -38,7 +38,7 @@
 <div class="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
 	<span>Scenario</span>
 	{#if scenario.retired}
-		<Badge size="sm" variant="gray">Retired</Badge>
+		<Badge size="sm" variant="gray" pill>Retired</Badge>
 	{/if}
 </div>
 <PageHeader title={scenario.name} />
