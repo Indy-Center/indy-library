@@ -165,12 +165,28 @@ the reader with `?as=<name>` on any page; the pick is kept in a
 `library_preview_as` cookie until the browser closes, and without either you are
 `student`:
 
-| `?as=`    | Reader                                                       |
-| --------- | ------------------------------------------------------------ |
-| `student` | No roles, teaches nothing                                    |
-| `teacher` | Teaches S-GC, the fixtures' course with teacher notes        |
-| `author`  | An author of S-GC and X-NEW in the fixtures, teaches nothing |
-| `admin`   | The Training Admin (`training:admin`)                        |
+| `?as=`    | Reader                                                           |
+| --------- | ---------------------------------------------------------------- |
+| `student` | No roles, teaches nothing                                        |
+| `teacher` | Teaches S-GC, the fixtures' course with teacher notes            |
+| `author`  | An author of S-GC and X-NEW in the fixtures, teaches nothing     |
+| `admin`   | The Training Admin (`training:admin`)                            |
+| `rated`   | VATSIM controller rating C1 and pilot rating PPL, for the header |
+
+The preview also lays extra, made-up cases over the fixtures
+(`src/lib/testing/preview-fixtures.ts`), for states the fixtures cannot hold
+because load tests pin them. No test imports that file:
+
+- `/courses/P-CASES/lesson-plans/lp-preview-rich`: a lesson plan whose body has
+  headings, lists, a link and an image.
+- `/courses/P-CASES/scenarios/scn-tower-day`: a scenario with no practical tasks.
+- `/competencies?edition=fw-preview-empty`: an edition with no competencies.
+- `/competencies?edition=fw-preview-deep`: competencies nested three deep, the
+  deepest with a multi-line lead and rubric.
+
+`P-CASES` is not on the course list (a load test pins the list); open it by
+address. There is no preview state with no courses at all: it would need a
+separate toggle.
 
 An unknown name shows `student` and logs the names there are. `PREVIEW` is read
 from the shell (`process.env`), not `.dev.vars`. The preview only runs under
@@ -181,6 +197,14 @@ from the shell (`process.env`), not `.dev.vars`. The preview only runs under
 ```bash
 pnpm format:check && pnpm build && pnpm check && pnpm test
 ```
+
+`check` runs `scripts/check-style.mjs` first (no raw palette colours or
+hex/rgb/hsl colours, no `label=` on `Breadcrumbs`, no `px-5` inside a `Panel`),
+then `svelte-check`.
+
+The pre-commit hook runs lint-staged (Prettier) and `pnpm test`, not `pnpm
+check`: that made commits slow. CI still runs it, so a type or style slip shows
+on the pull request; run `pnpm check` yourself before pushing.
 
 `build` comes before `check`, as in training-tools. CI runs exactly these on
 every pull request (`.github/workflows/ci.yml`). Each push to `main` runs them
