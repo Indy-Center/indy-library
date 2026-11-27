@@ -5,8 +5,6 @@ import { fakeCms, library, run } from '$lib/testing/library';
 import { session } from '$lib/testing/readers';
 import { load } from './+layout.server';
 import { load as lessonPlanLoad } from './courses/[code]/lesson-plans/[id]/+page.server';
-import { load as scenarioLoad } from './courses/[code]/scenarios/[id]/+page.server';
-import { load as taskLoad } from './tasks/[id]/+page.server';
 
 /** A reader whose VATSIM profile carries a controller and a pilot rating, as identity sends them. */
 function rated(cid: string): SessionContext {
@@ -73,22 +71,6 @@ describe('root layout', () => {
 
 		it('reads the catalogue once for a page request that runs the layout and a page that needs it', async () => {
 			const lib = library();
-			const params = { code: 'S-GC', id: 'scn-quiet' };
-			const event = layoutEvent(
-				session('1000002'),
-				lib,
-				'/courses/S-GC/scenarios/scn-quiet',
-				params
-			);
-
-			// SvelteKit runs the layout's and the page's server loads side by side, with one `locals`.
-			await Promise.all([run(load, event), run(scenarioLoad, event)]);
-
-			expect(lib.cms.asked(CATALOGUE)).toBe(1);
-		});
-
-		it('reads it once with the lesson plan page, which reads it for citations and area names too', async () => {
-			const lib = library();
 			const params = { code: 'S-GC', id: 'lp-taxi' };
 			const event = layoutEvent(
 				session('1000002'),
@@ -97,18 +79,9 @@ describe('root layout', () => {
 				params
 			);
 
+			// SvelteKit runs the layout's and the page's server loads side by side, with one `locals`.
+			// The lesson plan page reads the catalogue for positions, citations and area names too.
 			await Promise.all([run(load, event), run(lessonPlanLoad, event)]);
-
-			expect(lib.cms.asked(CATALOGUE)).toBe(1);
-		});
-
-		it('reads it once with a page that reads the whole catalogue itself', async () => {
-			const lib = library();
-			const event = layoutEvent(session('1000002'), lib, '/tasks/task-ground', {
-				id: 'task-ground'
-			});
-
-			await Promise.all([run(load, event), run(taskLoad, event)]);
 
 			expect(lib.cms.asked(CATALOGUE)).toBe(1);
 		});

@@ -6,14 +6,12 @@ import { session } from '$lib/testing/readers';
 import { load as courseLoad } from './+page.server';
 import { load as lessonPlanLoad } from './lesson-plans/[id]/+page.server';
 import type { TaskNode } from './lesson-plans/[id]/tasks';
-import { load as scenarioLoad } from './scenarios/[id]/+page.server';
 
 /**
- * Who sees teacher-only material (decisions 0017, 0076), on the two pages that carry it: lesson
- * plans (task notes, teacher-only resources and resource notes, a scenario's description,
- * events, ATCTrainer value and teacher position) and scenarios (their teacher position). "Sees
- * none" is checked on everything the load returns, since whatever it returns is sent to the
- * browser.
+ * Who sees teacher-only material (decisions 0017, 0076), on the lesson plan page (task notes,
+ * teacher-only resources and resource notes, a scenario's description, events, ATCTrainer value
+ * and teacher position). "Sees none" is checked on everything the load returns, since whatever
+ * it returns is sent to the browser.
  */
 
 const student = session('1000002');
@@ -38,12 +36,6 @@ function lessonPlan(
 		lessonPlanLoad,
 		lib.event(reader, `/courses/${code}/lesson-plans/${id}`, { code, id })
 	);
-}
-
-function scenario(reader: SessionContext, training: Training = fakeTraining(roster)) {
-	const lib = library({ training });
-	const params = { code: 'S-GC', id: 'scn-quiet' };
-	return run(scenarioLoad, lib.event(reader, '/courses/S-GC/scenarios/scn-quiet', params));
 }
 
 /** Every task note the page carries, the area leads' and headings' included, by task number. */
@@ -100,11 +92,9 @@ const ALL_OF_IT = {
 describe('teacher notes', () => {
 	it('are not sent to a student', async () => {
 		const lp = await lessonPlan(student);
-		const scn = await scenario(student);
 
 		expect(lp.showsTeacherNotes).toBe(false);
-		expect(scn.showsTeacherNotes).toBe(false);
-		expect(JSON.stringify([lp, scn])).not.toContain('SECRET');
+		expect(JSON.stringify(lp)).not.toContain('SECRET');
 	});
 
 	it("leave a student each scenario's name, airport and student position", async () => {
@@ -123,9 +113,8 @@ describe('teacher notes', () => {
 		});
 	});
 
-	it('are shown to a teacher qualified on the course: all of the lesson plan’s, and the scenario page’s', async () => {
+	it('are shown to a teacher qualified on the course: all of the lesson plan’s', async () => {
 		const lp = await lessonPlan(teacher);
-		const scn = await scenario(teacher);
 
 		expect(lp.showsTeacherNotes).toBe(true);
 		expect(teacherOnly(lp)).toEqual(ALL_OF_IT);
@@ -141,7 +130,6 @@ describe('teacher notes', () => {
 			['1.1.1', 'SECRET-LPT-HEADING: have the student read it back twice.'],
 			['2', 'SECRET-LPT-TOP: ask who owns the runway crossing.']
 		]);
-		expect(scn.scenario.teacherPosition?.callsign).toBe('XMP_TWR');
 	});
 
 	it('on a heading row and a top-level row go to the course’s teacher, and not to a student', async () => {
@@ -163,11 +151,9 @@ describe('teacher notes', () => {
 
 	it('are not sent to a teacher of another course', async () => {
 		const lp = await lessonPlan(otherTeacher);
-		const scn = await scenario(otherTeacher);
 
-		expect(JSON.stringify([lp, scn])).not.toContain('SECRET');
+		expect(JSON.stringify(lp)).not.toContain('SECRET');
 		expect(lp.scenarios.map((s) => s.teacherPosition)).toEqual([null, null]);
-		expect(scn.scenario.teacherPosition).toBeNull();
 		// ...who does see their own course's.
 		const alc = await lessonPlan(otherTeacher, undefined, 'lp-runway');
 		expect(alc.tasks.areas[0].lead?.teacherNotes).toBe('SECRET-ALC: ask about runway crossings.');
@@ -178,11 +164,9 @@ describe('teacher notes', () => {
 			const training = fakeTraining();
 			const lp = await lessonPlan(reader, training);
 			const alc = await lessonPlan(reader, training, 'lp-runway');
-			const scn = await scenario(reader, training);
 
 			expect(teacherOnly(lp)).toEqual(ALL_OF_IT);
 			expect(alc.tasks.areas[0].lead?.teacherNotes).toContain('SECRET-ALC');
-			expect(scn.scenario.teacherPosition?.callsign).toBe('XMP_TWR');
 			expect(training.asked).toEqual([]);
 		}
 	});
@@ -196,12 +180,10 @@ describe('teacher notes', () => {
 
 	it('are not sent when training-tools fails, and the page still renders', async () => {
 		const lp = await lessonPlan(teacher, fakeTraining('throws'));
-		const scn = await scenario(teacher, fakeTraining('throws'));
 
 		expect(lp.lessonPlan.code).toBe('S-GC-1');
 		expect(lp.tasks.count).toBe(4);
-		expect(scn.scenario.name).toBe('A quiet afternoon at Example Field');
-		expect(JSON.stringify([lp, scn])).not.toContain('SECRET');
+		expect(JSON.stringify(lp)).not.toContain('SECRET');
 	});
 
 	it('are not sent when training-tools is too slow, and the page still renders', async () => {

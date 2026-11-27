@@ -232,10 +232,6 @@ describe('handle, with PREVIEW=1', () => {
 
 			const cases = await event.locals.cms.courseVersion('P-CASES', 'current');
 			expect(cases!.modules[0].lessonPlans[0].bodyHtml).toContain('<img');
-			const { frameworks, competencies } = await event.locals.cms.catalogue();
-			const empty = frameworks.find((f) => f.id === 'fw-preview-empty')!;
-			expect(competencies.filter((c) => c.frameworkId === empty.id)).toEqual([]);
-			expect(competencies.filter((c) => c.frameworkId === 'fw-preview-deep')).toHaveLength(3);
 		});
 	});
 

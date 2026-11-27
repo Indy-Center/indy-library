@@ -194,23 +194,6 @@ export function findLessonPlan(
 }
 
 /**
- * A scenario the version offers, with the lesson plans that offer it, or a 404. A scenario
- * belongs to its course, but the version only carries those its lesson plans offer, so one no
- * lesson plan of this version offers is not shown.
- */
-export function findScenario(
-	doc: CourseVersionDocument,
-	id: string
-): { scenario: Scenario; offeredBy: LessonPlan[] } {
-	const offeredBy = doc.modules
-		.flatMap((module) => module.lessonPlans)
-		.filter((lp) => lp.scenarios.some((s) => s.id === id));
-	const scenario = offeredBy[0]?.scenarios.find((s) => s.id === id);
-	if (!scenario) error(404, 'This course offers no such scenario.');
-	return { scenario, offeredBy };
-}
-
-/**
  * The catalogue's positions, for Centerline's `Position` to look scenario positions up in
  * (decision 0060). When the CMS cannot be read and no copy is kept, there are none, as
  * Centerline's positions lookup asks: every position is then shown by its id, and the page
