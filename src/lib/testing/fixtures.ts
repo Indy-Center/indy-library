@@ -17,10 +17,11 @@ import type {
 /** Named on S-GC and X-NEW as an author. */
 export const AUTHOR_CID = '1000001';
 
+/** A point's description leads with its short name, before a colon, as the CMS's scales do. */
 export const POINTS = [
-	{ position: 1, label: 'Unsatisfactory', description: 'Needs the teacher throughout.' },
-	{ position: 2, label: 'Satisfactory', description: 'Needs the teacher now and then.' },
-	{ position: 3, label: 'Excellent', description: 'Needs no help.' }
+	{ position: 1, label: '1', description: 'Unsatisfactory: needs the teacher throughout.' },
+	{ position: 2, label: '2', description: 'Satisfactory: needs the teacher now and then.' },
+	{ position: 3, label: '3', description: 'Excellent: needs no help.' }
 ];
 
 /**
@@ -33,7 +34,8 @@ const quietAfternoon: Scenario = {
 	airport: 'KXMP',
 	studentPosition: 'pos-xmp-gnd',
 	teacherPosition: 'pos-xmp-twr',
-	description: 'SECRET-SCN-1: start with one departure, add arrivals as the student settles.',
+	description: 'SECRET-SCN-1: start with one departure.\nAdd arrivals as the student settles.',
+	// In the scenario's order, which is not difficulty order. The last has no callsign or type.
 	events: [
 		{
 			id: 'evt-1',
@@ -48,9 +50,30 @@ const quietAfternoon: Scenario = {
 			callsign: 'XMP202',
 			aircraftType: 'B738',
 			description: 'SECRET-EVT-2: misses the hold short and needs a correction.'
+		},
+		{
+			id: 'evt-3',
+			difficulty: 'easy',
+			callsign: '',
+			aircraftType: '',
+			description: 'SECRET-EVT-3: the ATIS changes mid-session.'
 		}
 	],
-	atctrainer: 'SECRET-ATCTRAINER-QUIET',
+	// A link: an ATCTrainer value starting `https:`.
+	atctrainer: 'https://example.com/atctrainer/SECRET-ATCTRAINER-QUIET',
+	retired: false
+};
+
+/** A second scenario on the same lesson plan, its ATCTrainer value a file's ID, no events. */
+const eveningPush: Scenario = {
+	id: 'scn-evening',
+	name: 'An evening push at Example Field',
+	airport: 'KXMP',
+	studentPosition: 'pos-xmp-gnd',
+	teacherPosition: 'pos-xmp-del',
+	description: '',
+	events: [],
+	atctrainer: 'SECRET-ATCTRAINER-ID-0042',
 	retired: false
 };
 
@@ -99,12 +122,44 @@ const taxiBasics: LessonPlan = {
 			},
 			teacherNotes: 'SECRET-LPT-1: ask what "hold short" means.'
 		},
+		// No statements, and its child 1.1.1.1 is here: a heading over it.
+		{
+			id: 'lpt-readback',
+			task: { id: 'task-readback', number: '1.1.1', name: 'Check the readback' },
+			required: true,
+			statements: { knowledge: '', skill: '' },
+			teacherNotes: 'SECRET-LPT-HEADING: have the student read it back twice.'
+		},
+		{
+			id: 'lpt-cited',
+			task: { id: 'task-cited', number: '1.1.1.1', name: 'Confirm the hold short' },
+			required: true,
+			statements: { knowledge: 'Knows why a hold short is read back.', skill: '' },
+			teacherNotes: ''
+		},
 		{
 			id: 'lpt-2',
 			task: { id: 'task-progressive', number: '1.2', name: 'Give progressive taxi' },
 			required: false,
 			statements: { knowledge: '', skill: 'Gives turn-by-turn taxi on request.' },
 			teacherNotes: ''
+		},
+		// A task the catalogue lacks, in an area it lacks too (5), before area 2 in the lesson's
+		// order. No statements and nothing beneath it here: an ordinary task.
+		{
+			id: 'lpt-uncatalogued',
+			task: { id: 'task-uncatalogued', number: '5.1', name: 'Read the weather board' },
+			required: true,
+			statements: { knowledge: '', skill: '' },
+			teacherNotes: ''
+		},
+		// A top-level task with statements: it is area 2's panel, its statements the first row.
+		{
+			id: 'lpt-coordination',
+			task: { id: 'task-unmapped', number: '2', name: 'Coordination' },
+			required: true,
+			statements: { knowledge: 'Knows who to call before a crossing.', skill: '' },
+			teacherNotes: 'SECRET-LPT-TOP: ask who owns the runway crossing.'
 		}
 	],
 	resources: [
@@ -128,9 +183,16 @@ const taxiBasics: LessonPlan = {
 			url: 'https://example.com/phraseology',
 			teacherOnly: false,
 			note: ''
+		},
+		{
+			id: 'res-guide',
+			title: 'SECRET-RES-ONLY-NOTED: teaching guide',
+			url: 'https://example.com/secret-teaching-guide',
+			teacherOnly: true,
+			note: 'SECRET-RES-ONLY-NOTE: use the second half only.'
 		}
 	],
-	scenarios: [quietAfternoon]
+	scenarios: [quietAfternoon, eveningPush]
 };
 
 /** A lesson plan with nothing teacher-only anywhere, so there is nothing to decide. */
@@ -249,6 +311,19 @@ export const sgcDraft: CourseVersionDocument = {
 					...taxiBasics,
 					title: 'Taxi basics, rewritten',
 					scenarios: [quietAfternoon, retiredScenario]
+				},
+				// The draft holds three lesson plans, so the middle one has a previous and a next.
+				groundReview,
+				{
+					...groundReview,
+					id: 'lp-draft-handoffs',
+					code: 'S-GC-3',
+					title: 'Handoffs between positions',
+					description: 'Passing an aircraft to the next controller.',
+					bodyHtml: '<p>Made-up draft text about handoffs.</p>',
+					tasks: [],
+					resources: [],
+					scenarios: []
 				}
 			]
 		}
@@ -430,7 +505,9 @@ export const catalogue: Catalogue = {
 	],
 	sources: [
 		{ id: 'source-order', name: 'Example Order', edition: 'B', url: 'https://example.com/order' },
-		{ id: 'source-notes', name: 'Example Notes', edition: '2', url: 'https://example.com/notes' }
+		{ id: 'source-notes', name: 'Example Notes', edition: '2', url: 'https://example.com/notes' },
+		// A source with no link, so a citation of it links nowhere.
+		{ id: 'source-paper', name: 'Example Handbook', edition: '1', url: '' }
 	],
 	credentials: [
 		{
@@ -580,7 +657,11 @@ export const catalogue: Catalogue = {
 			knowledgeStatement: '',
 			skillStatement: '',
 			mappings: [],
-			citations: []
+			// Lesson plan citation cases: a source with no link, and a source the catalogue lacks.
+			citations: [
+				{ sourceId: 'source-paper', place: 'Section 2', title: null, url: null },
+				{ sourceId: 'source-gone', place: '7-1', title: 'Calling the next position', url: null }
+			]
 		},
 		// Task page cases (library-centerline 12). Nothing here is mapped, so the competency
 		// pages' lists are unchanged. `task-readback` gives the browser check ancestors, a child
