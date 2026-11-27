@@ -1,19 +1,14 @@
 <script lang="ts">
 	import {
 		Airport,
-		Badge,
 		Breadcrumbs,
 		DescriptionList,
-		EmptyState,
 		PageHeader,
 		Panel
 	} from '@indy-center/centerline-svelte';
-	import ModeBadge from '$lib/components/ModeBadge.svelte';
 	import Retired from '$lib/components/Retired.svelte';
 	import RowLink from '$lib/components/RowLink.svelte';
 	import ScenarioPosition from '$lib/components/ScenarioPosition.svelte';
-	import TaskLink from '$lib/components/TaskLink.svelte';
-	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
 	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
 
@@ -55,49 +50,17 @@
 		<dt>Student position</dt>
 		<dd><ScenarioPosition position={scenario.studentPosition} /></dd>
 	</div>
-	<div>
-		<dt>Teacher position</dt>
-		<dd><ScenarioPosition position={scenario.teacherPosition} /></dd>
-	</div>
-	{#if scenario.difficulty}
+	{#if scenario.teacherPosition}
 		<div>
-			<dt>Difficulty</dt>
-			<dd>{scenario.difficulty}</dd>
+			<dt>Teacher position</dt>
+			<dd><ScenarioPosition position={scenario.teacherPosition} /></dd>
 		</div>
 	{/if}
-	<div>
-		<dt>Live or sim</dt>
-		<dd><ModeBadge mode={scenario.mode} /></dd>
-	</div>
 </DescriptionList>
 
 {#if data.showsTeacherNotes}
 	<TeacherNotesNotice />
 {/if}
-
-<Panel title="Practical tasks" level={2} flush class="mt-8">
-	{#if data.practicalTasks.length === 0}
-		<EmptyState size="inline" class="px-4 py-4">This scenario has no practical tasks.</EmptyState>
-	{:else}
-		<ol class="divide-y divide-border">
-			{#each data.practicalTasks as pt (pt.id)}
-				<li class="px-4 py-3">
-					<div class="flex flex-wrap items-baseline justify-between gap-2">
-						<TaskLink task={pt.task} />
-						{#if pt.required}
-							<Badge size="sm" variant="sky">Required</Badge>
-						{:else}
-							<Badge size="sm" variant="gray">Optional</Badge>
-						{/if}
-					</div>
-					{#if pt.teacherNotes}
-						<TeacherNotes notes={pt.teacherNotes} />
-					{/if}
-				</li>
-			{/each}
-		</ol>
-	{/if}
-</Panel>
 
 {#if data.offeredBy.length > 0}
 	<Panel title="Offered by" level={2} flush class="mt-8">

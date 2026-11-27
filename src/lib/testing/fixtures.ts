@@ -23,70 +23,143 @@ export const POINTS = [
 	{ position: 3, label: 'Excellent', description: 'Needs no help.' }
 ];
 
+/**
+ * Every teacher-only field is set here (decision 0076): a description, events, an ATCTrainer id
+ * and a teacher position.
+ */
 const quietAfternoon: Scenario = {
 	id: 'scn-quiet',
 	name: 'A quiet afternoon at Example Field',
 	airport: 'KXMP',
-	studentPosition: { id: 'pos-xmp-gnd', callsign: 'XMP_GND' },
-	teacherPosition: { id: 'pos-xmp-twr', callsign: 'XMP_TWR' },
-	difficulty: 'easy',
-	mode: 'sim',
-	retired: false,
-	practicalTasks: [
+	studentPosition: 'pos-xmp-gnd',
+	teacherPosition: 'pos-xmp-twr',
+	description: 'SECRET-SCN-1: start with one departure, add arrivals as the student settles.',
+	events: [
 		{
-			id: 'pt-1',
-			task: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' },
-			teacherNotes: 'SECRET-PT-1: have the pilot read back the wrong runway.',
-			required: true
+			id: 'evt-1',
+			difficulty: 'easy',
+			callsign: 'XMP101',
+			aircraftType: 'C172',
+			description: 'SECRET-EVT-1: asks for taxi without the ATIS.'
 		},
 		{
-			id: 'pt-2',
-			task: { id: 'task-progressive', number: '1.2', name: 'Give progressive taxi' },
-			teacherNotes: 'SECRET-PT-2: pilot asks for progressive taxi halfway.',
-			required: false
+			id: 'evt-2',
+			difficulty: 'medium',
+			callsign: 'XMP202',
+			aircraftType: 'B738',
+			description: 'SECRET-EVT-2: misses the hold short and needs a correction.'
 		}
-	]
+	],
+	atctrainer: 'SECRET-ATCTRAINER-QUIET',
+	retired: false
 };
 
+/**
+ * A lesson plan with every teacher-only field set: a task's teacher notes, a teacher-only
+ * resource, a resource's note and a scenario's teacher-only fields. Its tasks hold a heading
+ * (no statements) above the tasks in it, an optional task, and a task with one statement.
+ */
 const taxiBasics: LessonPlan = {
 	id: 'lp-taxi',
 	code: 'S-GC-1',
 	title: 'Taxi basics',
 	description: 'Moving aircraft around a made-up field.',
 	bodyHtml: '<p>Read the field diagram of Example Field before the lesson.</p>',
+	body: {
+		root: {
+			type: 'root',
+			children: [
+				{
+					type: 'paragraph',
+					children: [
+						{ type: 'text', text: 'Read the field diagram of Example Field before the lesson.' }
+					]
+				}
+			]
+		}
+	},
 	time: 90,
 	isExam: false,
 	minimum: POINTS[1],
-	theoryItems: [
+	tasks: [
 		{
-			id: 'ti-1',
-			task: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' },
-			teacherNotes: 'SECRET-TI-1: ask what "hold short" means.'
+			id: 'lpt-heading',
+			task: { id: 'task-ground', number: '1', name: 'Ground movement' },
+			required: true,
+			statements: { knowledge: '', skill: '' },
+			teacherNotes: ''
 		},
 		{
-			id: 'ti-2',
+			id: 'lpt-1',
+			task: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' },
+			required: true,
+			statements: {
+				knowledge: 'Knows the parts of a taxi clearance.',
+				skill: 'Issues a taxi clearance with a route and a hold short.'
+			},
+			teacherNotes: 'SECRET-LPT-1: ask what "hold short" means.'
+		},
+		{
+			id: 'lpt-2',
 			task: { id: 'task-progressive', number: '1.2', name: 'Give progressive taxi' },
+			required: false,
+			statements: { knowledge: '', skill: 'Gives turn-by-turn taxi on request.' },
 			teacherNotes: ''
+		}
+	],
+	resources: [
+		{
+			id: 'res-diagram',
+			title: 'Example Field diagram',
+			url: 'https://example.com/xmp-diagram',
+			teacherOnly: false,
+			note: 'SECRET-RES-NOTE: point out taxiway B first.'
+		},
+		{
+			id: 'res-answers',
+			title: 'SECRET-RES-ONLY: taxi quiz answers',
+			url: 'https://example.com/secret-quiz-answers',
+			teacherOnly: true,
+			note: ''
+		},
+		{
+			id: 'res-card',
+			title: 'Example phraseology card',
+			url: 'https://example.com/phraseology',
+			teacherOnly: false,
+			note: ''
 		}
 	],
 	scenarios: [quietAfternoon]
 };
 
-/** A lesson plan with no teacher notes anywhere, so there is nothing to decide. */
+/** A lesson plan with nothing teacher-only anywhere, so there is nothing to decide. */
 const groundReview: LessonPlan = {
 	id: 'lp-review',
 	code: 'S-GC-2',
 	title: 'Ground review',
 	description: 'Talking it all through.',
 	bodyHtml: '<p>No reading needed.</p>',
+	body: null,
 	time: null,
 	isExam: true,
 	minimum: null,
-	theoryItems: [
+	tasks: [
 		{
-			id: 'ti-3',
+			id: 'lpt-3',
 			task: { id: 'task-ground', number: '1', name: 'Ground movement' },
+			required: true,
+			statements: { knowledge: 'Knows who owns which part of the field.', skill: '' },
 			teacherNotes: ''
+		}
+	],
+	resources: [
+		{
+			id: 'res-review',
+			title: 'Example review sheet',
+			url: 'https://example.com/review',
+			teacherOnly: false,
+			note: ''
 		}
 	],
 	scenarios: []
@@ -148,22 +221,13 @@ export const sgcCurrent: CourseVersionDocument = {
 	]
 };
 
-// Scenario cases for the scenario page's browser check (ticket 10): a retired one, and one
-// with no difficulty. Only S-GC's draft offers them, so no published-version page changes.
+// A retired scenario, still served. Only S-GC's draft offers it, so no published-version page
+// changes.
 const retiredScenario: Scenario = {
 	...quietAfternoon,
 	id: 'scn-retired',
 	name: 'An old evening at Example Field',
-	difficulty: 'hard',
-	mode: 'live',
 	retired: true
-};
-
-const unratedScenario: Scenario = {
-	...quietAfternoon,
-	id: 'scn-unrated',
-	name: 'A foggy morning at Example Field',
-	difficulty: null
 };
 
 /** S-GC's next version, being written. */
@@ -184,7 +248,7 @@ export const sgcDraft: CourseVersionDocument = {
 				{
 					...taxiBasics,
 					title: 'Taxi basics, rewritten',
-					scenarios: [quietAfternoon, retiredScenario, unratedScenario]
+					scenarios: [quietAfternoon, retiredScenario]
 				}
 			]
 		}
@@ -194,33 +258,33 @@ export const sgcDraft: CourseVersionDocument = {
 // Scenario position cases (library-centerline 11), offered by A-LC's published lesson plan so a
 // student sees them. S-GC's `scn-quiet` already has a student position with a short name
 // (XMP_GND). These add one without a short name (XMP_TWR), a retired one (XMP_DEL), and one
-// the catalogue lacks (XMP_APP). No practical tasks, so no teacher notes to decide on.
+// the catalogue lacks (pos-xmp-app). No description, events or ATCTrainer id.
 const towerDay: Scenario = {
 	id: 'scn-tower-day',
 	name: 'A busy day in Example Tower',
 	airport: 'KXMP',
-	studentPosition: { id: 'pos-xmp-twr', callsign: 'XMP_TWR' },
-	teacherPosition: { id: 'pos-xmp-gnd', callsign: 'XMP_GND' },
-	difficulty: 'medium',
-	mode: 'sim',
-	retired: false,
-	practicalTasks: []
+	studentPosition: 'pos-xmp-twr',
+	teacherPosition: 'pos-xmp-gnd',
+	description: '',
+	events: [],
+	atctrainer: null,
+	retired: false
 };
 
 const oldDelivery: Scenario = {
 	...towerDay,
 	id: 'scn-old-delivery',
 	name: 'Clearances from the old delivery desk',
-	studentPosition: { id: 'pos-xmp-del', callsign: 'XMP_DEL' },
-	teacherPosition: { id: 'pos-xmp-twr', callsign: 'XMP_TWR' }
+	studentPosition: 'pos-xmp-del',
+	teacherPosition: 'pos-xmp-twr'
 };
 
 const lostPosition: Scenario = {
 	...towerDay,
 	id: 'scn-lost-position',
 	name: 'Arrivals from a missing approach',
-	studentPosition: { id: 'pos-xmp-app', callsign: 'XMP_APP' },
-	teacherPosition: { id: 'pos-xmp-del', callsign: 'XMP_DEL' }
+	studentPosition: 'pos-xmp-app',
+	teacherPosition: 'pos-xmp-del'
 };
 
 export const alcCurrent: CourseVersionDocument = {
@@ -247,16 +311,20 @@ export const alcCurrent: CourseVersionDocument = {
 					title: 'Runway basics',
 					description: 'One runway at a time.',
 					bodyHtml: '<p>Runways are long.</p>',
+					body: null,
 					time: 60,
 					isExam: false,
 					minimum: POINTS[1],
-					theoryItems: [
+					tasks: [
 						{
-							id: 'ti-alc',
+							id: 'lpt-alc',
 							task: { id: 'task-ground', number: '1', name: 'Ground movement' },
+							required: true,
+							statements: { knowledge: 'Knows where the runways are.', skill: '' },
 							teacherNotes: 'SECRET-ALC: ask about runway crossings.'
 						}
 					],
+					resources: [],
 					// Ticket 11's position cases.
 					scenarios: [towerDay, oldDelivery, lostPosition]
 				}
@@ -309,6 +377,12 @@ export const courseList: CourseList = {
 			draftVersion: { id: 'ver-xnew-1', number: 1 }
 		}
 	]
+};
+
+const XMP_FACILITY = {
+	id: 'XMP',
+	name: 'Example Field ATCT',
+	parent: { id: 'ZXM', name: 'Example Center' }
 };
 
 export const catalogue: Catalogue = {
@@ -399,7 +473,7 @@ export const catalogue: Catalogue = {
 			shortName: 'XMP GND',
 			radioName: 'Example Ground',
 			frequency: 121900000,
-			facility: { id: 'XMP', name: 'Example Field ATCT' },
+			facility: XMP_FACILITY,
 			starred: true,
 			requiredCredentials: [{ anyOf: ['S-GC'] }],
 			retired: false
@@ -411,7 +485,7 @@ export const catalogue: Catalogue = {
 			shortName: null,
 			radioName: 'Example Tower',
 			frequency: 118300000,
-			facility: { id: 'XMP', name: 'Example Field ATCT' },
+			facility: XMP_FACILITY,
 			starred: true,
 			requiredCredentials: [],
 			retired: false
@@ -425,7 +499,7 @@ export const catalogue: Catalogue = {
 			shortName: 'XMP CD',
 			radioName: 'Example Clearance',
 			frequency: 121650000,
-			facility: { id: 'XMP', name: 'Example Field ATCT' },
+			facility: XMP_FACILITY,
 			starred: false,
 			requiredCredentials: [{ anyOf: ['S-GC'] }],
 			retired: true
@@ -439,8 +513,12 @@ export const catalogue: Catalogue = {
 			description: 'Anything that moves on the ground.',
 			parentId: null,
 			retired: false,
+			knowledgeStatement: '',
+			skillStatement: '',
 			mappings: [{ competencyId: 'comp-usa-taxi', fromTaskId: 'task-ground' }],
-			citations: [{ sourceId: 'source-order', place: '3-7-2', title: 'Taxi and ground movement' }]
+			citations: [
+				{ sourceId: 'source-order', place: '3-7-2', title: 'Taxi and ground movement', url: null }
+			]
 		},
 		{
 			id: 'task-taxi-clearance',
@@ -449,11 +527,21 @@ export const catalogue: Catalogue = {
 			description: 'Route, hold short, readback.',
 			parentId: 'task-ground',
 			retired: false,
+			knowledgeStatement: 'Knows the parts of a taxi clearance.',
+			skillStatement: 'Issues a taxi clearance with a route and a hold short.',
 			mappings: [
 				{ competencyId: 'comp-usa-taxi', fromTaskId: 'task-ground' },
 				{ competencyId: 'comp-gcap-move', fromTaskId: 'task-taxi-clearance' }
 			],
-			citations: [{ sourceId: 'source-notes', place: 'Chapter 4', title: null }]
+			// A citation with its own link; the others have none and fall back to their source's.
+			citations: [
+				{
+					sourceId: 'source-notes',
+					place: 'Chapter 4',
+					title: null,
+					url: 'https://example.com/notes#chapter-4'
+				}
+			]
 		},
 		{
 			id: 'task-readback',
@@ -462,6 +550,8 @@ export const catalogue: Catalogue = {
 			description: 'Listen for the hold short.',
 			parentId: 'task-taxi-clearance',
 			retired: false,
+			knowledgeStatement: '',
+			skillStatement: '',
 			mappings: [
 				{ competencyId: 'comp-usa-taxi', fromTaskId: 'task-ground' },
 				{ competencyId: 'comp-gcap-move', fromTaskId: 'task-taxi-clearance' }
@@ -475,6 +565,8 @@ export const catalogue: Catalogue = {
 			description: 'Turn by turn.',
 			parentId: 'task-ground',
 			retired: false,
+			knowledgeStatement: '',
+			skillStatement: '',
 			mappings: [{ competencyId: 'comp-usa-taxi', fromTaskId: 'task-ground' }],
 			citations: []
 		},
@@ -485,6 +577,8 @@ export const catalogue: Catalogue = {
 			description: 'Talking to the next position.',
 			parentId: null,
 			retired: false,
+			knowledgeStatement: '',
+			skillStatement: '',
 			mappings: [],
 			citations: []
 		},
@@ -499,11 +593,13 @@ export const catalogue: Catalogue = {
 			description: 'Line one of the description.\nLine two, after a break.',
 			parentId: 'task-readback',
 			retired: false,
+			knowledgeStatement: '',
+			skillStatement: '',
 			mappings: [],
 			citations: [
-				{ sourceId: 'source-order', place: '3-7-2', title: 'Taxi and ground movement' },
-				{ sourceId: 'source-notes', place: 'Chapter 4', title: null },
-				{ sourceId: 'source-order', place: '', title: 'Whole-document overview' }
+				{ sourceId: 'source-order', place: '3-7-2', title: 'Taxi and ground movement', url: null },
+				{ sourceId: 'source-notes', place: 'Chapter 4', title: null, url: null },
+				{ sourceId: 'source-order', place: '', title: 'Whole-document overview', url: null }
 			]
 		},
 		{
@@ -513,6 +609,8 @@ export const catalogue: Catalogue = {
 			description: '',
 			parentId: null,
 			retired: true,
+			knowledgeStatement: '',
+			skillStatement: '',
 			mappings: [],
 			citations: []
 		},
@@ -525,6 +623,8 @@ export const catalogue: Catalogue = {
 			description: '',
 			parentId: null,
 			retired: true,
+			knowledgeStatement: '',
+			skillStatement: '',
 			mappings: [{ competencyId: 'comp-gcap-move', fromTaskId: 'task-retired-strip' }],
 			citations: []
 		}

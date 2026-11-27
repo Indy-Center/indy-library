@@ -1,23 +1,25 @@
+import { error } from '@sveltejs/kit';
 import {
 	courseVersion,
-	difficultyLabel,
 	findScenario,
-	hasTeacherNotes,
-	maySeeTeacherNotes,
+	lessonPlanForReader,
 	makeShownPosition,
-	taskRef,
-	teacherNotes,
 	versionOf
 } from '$lib/server/reader';
 import type { PageServerLoad } from './$types';
 
-/** One scenario offered by a course's current version: what a student is graded on, and
- * for those who may teach it, how each challenge is posed. */
+/** One scenario offered by a course's version, and the lesson plans that offer it. */
 export const load = (async ({ locals, params, url }) => {
 	const doc = await courseVersion(locals, params.code, url);
-	const { scenario, offeredBy } = findScenario(doc, params.id);
-	const showsTeacherNotes =
-		hasTeacherNotes(scenario.practicalTasks) && (await maySeeTeacherNotes(locals, doc.course.code));
+	const { offeredBy } = findScenario(doc, params.id);
+	// Teacher-only material is held back on the lesson plan that offers the scenario (0076).
+	const { lessonPlan, showsTeacherOnly } = await lessonPlanForReader(
+		locals,
+		doc.course.code,
+		offeredBy[0]
+	);
+	const scenario = lessonPlan.scenarios.find((s) => s.id === params.id);
+	if (!scenario) error(404, 'This course offers no such scenario.');
 	// The same catalogue read as the root layout's positions: the CMS client reads it once a request.
 	const shownPosition = await makeShownPosition(locals);
 
@@ -29,18 +31,11 @@ export const load = (async ({ locals, params, url }) => {
 			name: scenario.name,
 			airport: scenario.airport,
 			studentPosition: shownPosition(scenario.studentPosition),
-			teacherPosition: shownPosition(scenario.teacherPosition),
-			difficulty: difficultyLabel(scenario.difficulty),
-			mode: scenario.mode,
+			teacherPosition:
+				scenario.teacherPosition === null ? null : shownPosition(scenario.teacherPosition),
 			retired: scenario.retired
 		},
-		showsTeacherNotes,
-		practicalTasks: scenario.practicalTasks.map((pt) => ({
-			id: pt.id,
-			task: taskRef(pt.task),
-			required: pt.required,
-			teacherNotes: teacherNotes(pt.teacherNotes, showsTeacherNotes)
-		})),
+		showsTeacherNotes: showsTeacherOnly,
 		offeredBy: offeredBy.map((lp) => ({ id: lp.id, code: lp.code, title: lp.title }))
 	};
 }) satisfies PageServerLoad;

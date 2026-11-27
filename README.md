@@ -46,11 +46,15 @@ Decided on the server for each request:
 
 Older published versions are never shown.
 
-- **Teacher notes** are stripped in the server load: a reader who may not see
-  them gets `null` in their place, so they never reach the browser. Whether a
-  teacher may see them comes from training-tools (below), asked only when the
-  page has notes to decide on, at most once per request. If it throws or takes
-  longer than 1.5 seconds, no notes are shown and the page renders anyway.
+- **Teacher notes** and the rest of a lesson plan's teacher-only material (a
+  task's teacher notes, teacher-only resources and every resource's note, and a
+  scenario's teacher position, description, events and ATCTrainer id) are
+  stripped in the server load, by `lessonPlanForReader` in
+  `src/lib/server/reader.ts`: a reader who may not see them gets `null` in their
+  place, and no teacher-only resources, so they never reach the browser. Whether
+  a teacher may see them comes from training-tools (below), asked only when the
+  lesson plan has some to decide on, at most once per request. If it throws or
+  takes longer than 1.5 seconds, none is shown and the page renders anyway.
 - **Drafts** are fetched only for readers who may see them. Who may is decided
   from the CMS's course list (which carries each course's authors) before the
   draft is asked for. Anyone else gets a 404, as if there were no draft.
@@ -179,7 +183,8 @@ because load tests pin them. No test imports that file:
 
 - `/courses/P-CASES/lesson-plans/lp-preview-rich`: a lesson plan whose body has
   headings, lists, a link and an image.
-- `/courses/P-CASES/scenarios/scn-tower-day`: a scenario with no practical tasks.
+- `/courses/P-CASES/scenarios/scn-tower-day`: a scenario with no description,
+  events or ATCTrainer id.
 - `/competencies?edition=fw-preview-empty`: an edition with no competencies.
 - `/competencies?edition=fw-preview-deep`: competencies nested three deep, the
   deepest with a multi-line lead and rubric.

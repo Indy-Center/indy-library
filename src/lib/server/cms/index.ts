@@ -62,7 +62,7 @@ export const CMS_TIMEOUT_MS = 5_000;
  * nor as the fallback while the CMS fails. Copies kept before there was a shape version are
  * filed under the bare path, which is shape 1.
  */
-export const SHAPE_VERSION = 2;
+export const SHAPE_VERSION = 3;
 
 /** Where the copy of the document at `path` is kept. */
 export function copyKey(path: string, shape = SHAPE_VERSION): string {

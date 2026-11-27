@@ -15,7 +15,6 @@
 	import TaskLink from '$lib/components/TaskLink.svelte';
 	import TeacherNotes from '$lib/components/TeacherNotes.svelte';
 	import TeacherNotesNotice from '$lib/components/TeacherNotesNotice.svelte';
-	import ModeBadge from '$lib/components/ModeBadge.svelte';
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
 
 	let { data } = $props();
@@ -73,12 +72,12 @@
 	<TeacherNotesNotice />
 {/if}
 
-<Panel title="Theory items" level={2} flush class="mt-8">
-	{#if data.theoryItems.length === 0}
-		<EmptyState size="inline" class="px-4 py-4">This lesson plan has no theory items.</EmptyState>
+<Panel title="Tasks" level={2} flush class="mt-8">
+	{#if data.tasks.length === 0}
+		<EmptyState size="inline" class="px-4 py-4">This lesson plan has no tasks.</EmptyState>
 	{:else}
 		<ol class="divide-y divide-border">
-			{#each data.theoryItems as item (item.id)}
+			{#each data.tasks as item (item.id)}
 				<li class="px-4 py-3">
 					<TaskLink task={item.task} />
 					{#if item.teacherNotes}
@@ -103,10 +102,6 @@
 					>
 						<span class="flex-1 font-medium">{scenario.name}</span>
 						<ScenarioPosition position={scenario.studentPosition} />
-						{#if scenario.difficulty}
-							<span class="text-sm text-muted-foreground">{scenario.difficulty}</span>
-						{/if}
-						<ModeBadge mode={scenario.mode} />
 					</RowLink>
 				</li>
 			{/each}

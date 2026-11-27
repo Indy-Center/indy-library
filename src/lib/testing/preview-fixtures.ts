@@ -48,8 +48,11 @@ const richBody: LessonPlan = {
 	time: 45,
 	isExam: false,
 	minimum: POINTS[1],
-	theoryItems: [],
-	// Scenario with no practical tasks (see also A-LC's "A busy day in Example Tower").
+	body: null,
+	tasks: [],
+	resources: [],
+	// A scenario with no description, events or ATCTrainer id (A-LC's "A busy day in Example
+	// Tower").
 	scenarios: alcCurrent.modules[0].lessonPlans[0].scenarios.slice(0, 1)
 };
 
