@@ -1,12 +1,9 @@
 import {
 	courseVersion,
-	difficultyLabel,
 	findLessonPlan,
-	hasTeacherNotes,
-	maySeeTeacherNotes,
+	lessonPlanForReader,
 	makeShownPosition,
 	taskRef,
-	teacherNotes,
 	versionOf
 } from '$lib/server/reader';
 import type { PageServerLoad } from './$types';
@@ -14,9 +11,13 @@ import type { PageServerLoad } from './$types';
 /** One lesson plan of the course version the reader asked for. */
 export const load = (async ({ locals, params, url }) => {
 	const doc = await courseVersion(locals, params.code, url);
-	const { module, lessonPlan } = findLessonPlan(doc, params.id);
-	const showsTeacherNotes =
-		hasTeacherNotes(lessonPlan.theoryItems) && (await maySeeTeacherNotes(locals, doc.course.code));
+	const found = findLessonPlan(doc, params.id);
+	const { module } = found;
+	const { lessonPlan, showsTeacherOnly } = await lessonPlanForReader(
+		locals,
+		doc.course.code,
+		found.lessonPlan
+	);
 	// The same catalogue read as the root layout's positions: the CMS client reads it once a request.
 	const shownPosition = await makeShownPosition(locals);
 
@@ -35,19 +36,17 @@ export const load = (async ({ locals, params, url }) => {
 			isExam: lessonPlan.isExam,
 			minimum: lessonPlan.minimum?.label ?? null
 		},
-		showsTeacherNotes,
-		theoryItems: lessonPlan.theoryItems.map((item) => ({
+		showsTeacherNotes: showsTeacherOnly,
+		tasks: lessonPlan.tasks.map((item) => ({
 			id: item.id,
 			task: taskRef(item.task),
-			teacherNotes: teacherNotes(item.teacherNotes, showsTeacherNotes)
+			teacherNotes: item.teacherNotes
 		})),
 		scenarios: lessonPlan.scenarios.map((scenario) => ({
 			id: scenario.id,
 			name: scenario.name,
 			airport: scenario.airport,
-			studentPosition: shownPosition(scenario.studentPosition),
-			difficulty: difficultyLabel(scenario.difficulty),
-			mode: scenario.mode
+			studentPosition: shownPosition(scenario.studentPosition)
 		}))
 	};
 }) satisfies PageServerLoad;

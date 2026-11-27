@@ -1,5 +1,5 @@
 <!-- A scenario's position on one line, in Centerline's controllers' preset, marked when retired.
-     A position the catalogue lacks shows its callsign alone. -->
+     A position the catalogue lacks shows its id alone. -->
 <script lang="ts">
 	import { Position } from '@indy-center/centerline-svelte';
 	import type { ShownPosition } from '$lib/positions';

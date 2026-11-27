@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { library, run } from '$lib/testing/library';
+import { cmsDocuments, fakeCms, library, run } from '$lib/testing/library';
 import { session } from '$lib/testing/readers';
 import { AUTHOR_CID } from '$lib/testing/fixtures';
 import { load } from './+page.server';
@@ -32,17 +32,22 @@ describe('/courses/[code]/lesson-plans/[id]', () => {
 		expect(data.lessonPlan.moduleNumber).toBe(1);
 	});
 
-	it('lists its theory items in order, each with its task number and name', async () => {
+	it('lists its tasks in order, each with its task number and name', async () => {
 		const data = await lessonPlan(library(), 'lp-taxi');
 
-		expect(data.theoryItems).toEqual([
+		expect(data.tasks).toEqual([
 			{
-				id: 'ti-1',
+				id: 'lpt-heading',
+				task: { id: 'task-ground', number: '1', name: 'Ground movement' },
+				teacherNotes: null
+			},
+			{
+				id: 'lpt-1',
 				task: { id: 'task-taxi-clearance', number: '1.1', name: 'Issue a taxi clearance' },
 				teacherNotes: null
 			},
 			{
-				id: 'ti-2',
+				id: 'lpt-2',
 				task: { id: 'task-progressive', number: '1.2', name: 'Give progressive taxi' },
 				teacherNotes: null
 			}
@@ -57,28 +62,42 @@ describe('/courses/[code]/lesson-plans/[id]', () => {
 				id: 'scn-quiet',
 				name: 'A quiet afternoon at Example Field',
 				airport: 'KXMP',
-				studentPosition: { id: 'pos-xmp-gnd', callsign: 'XMP_GND', retired: false },
-				difficulty: 'Easy',
-				mode: 'sim'
+				studentPosition: { id: 'pos-xmp-gnd', callsign: 'XMP_GND', retired: false }
 			}
 		]);
 	});
 
-	it("hands each scenario's student position to Position, with whether it is retired", async () => {
-		// A-LC's scenarios: no short name, retired, and a position the catalogue lacks.
-		const data = await lessonPlan(library(), 'lp-runway', 'A-LC');
+	describe("each scenario's student position, a vNAS id looked up in the catalogue", () => {
+		it('resolves to its callsign, marked when retired, and is shown by id when unknown', async () => {
+			// A-LC's scenarios: no short name, retired, and a position the catalogue lacks.
+			const data = await lessonPlan(library(), 'lp-runway', 'A-LC');
 
-		expect(data.scenarios.map((s) => [s.id, s.studentPosition])).toEqual([
-			['scn-tower-day', { id: 'pos-xmp-twr', callsign: 'XMP_TWR', retired: false }],
-			['scn-old-delivery', { id: 'pos-xmp-del', callsign: 'XMP_DEL', retired: true }],
-			['scn-lost-position', { id: 'pos-xmp-app', callsign: 'XMP_APP', retired: false }]
-		]);
+			expect(data.scenarios.map((s) => [s.id, s.studentPosition])).toEqual([
+				['scn-tower-day', { id: 'pos-xmp-twr', callsign: 'XMP_TWR', retired: false }],
+				['scn-old-delivery', { id: 'pos-xmp-del', callsign: 'XMP_DEL', retired: true }],
+				['scn-lost-position', { id: 'pos-xmp-app', callsign: 'pos-xmp-app', retired: false }]
+			]);
+		});
+
+		it('is shown by id when the catalogue cannot be read', async () => {
+			const documents = cmsDocuments();
+			delete documents['/api/courseware/catalogue'];
+			const data = await lessonPlan(library({ cms: fakeCms(documents) }), 'lp-runway', 'A-LC');
+
+			expect(data.scenarios[1].studentPosition).toEqual({
+				id: 'pos-xmp-del',
+				callsign: 'pos-xmp-del',
+				retired: false
+			});
+		});
 	});
 
-	it('sends a student no teacher notes', async () => {
+	it('sends a student none of the teacher-only material', async () => {
 		const data = await lessonPlan(library(), 'lp-taxi');
 
+		expect(data.showsTeacherNotes).toBe(false);
 		expect(JSON.stringify(data)).not.toContain('SECRET');
+		expect(JSON.stringify(data)).not.toContain('XMP_TWR');
 	});
 
 	it('is a 404 for a lesson plan not in the current version', async () => {

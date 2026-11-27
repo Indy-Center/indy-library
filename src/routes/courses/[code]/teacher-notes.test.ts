@@ -8,9 +8,9 @@ import { load as lessonPlanLoad } from './lesson-plans/[id]/+page.server';
 import { load as scenarioLoad } from './scenarios/[id]/+page.server';
 
 /**
- * Who sees teacher notes, on the two pages that carry them: lesson plans (on theory items) and
- * scenarios (on practical tasks). "Sees none" is checked on everything the load returns, since
- * whatever it returns is sent to the browser.
+ * Who sees teacher-only material (decision 0076), on the two pages that carry it: lesson plans
+ * (on their tasks) and scenarios (their teacher position). "Sees none" is checked on everything
+ * the load returns, since whatever it returns is sent to the browser.
  */
 
 const student = session('1000002');
@@ -52,19 +52,17 @@ describe('teacher notes', () => {
 		expect(JSON.stringify([lp, scn])).not.toContain('SECRET');
 	});
 
-	it('are shown to a teacher qualified on the course, on its theory items and practical tasks', async () => {
+	it("are shown to a teacher qualified on the course, on its lesson plans' tasks and scenarios", async () => {
 		const lp = await lessonPlan(teacher);
 		const scn = await scenario(teacher);
 
 		expect(lp.showsTeacherNotes).toBe(true);
-		expect(lp.theoryItems.map((item) => item.teacherNotes)).toEqual([
-			'SECRET-TI-1: ask what "hold short" means.',
+		expect(lp.tasks.map((item) => item.teacherNotes)).toEqual([
+			null,
+			'SECRET-LPT-1: ask what "hold short" means.',
 			null
 		]);
-		expect(scn.practicalTasks.map((pt) => pt.teacherNotes)).toEqual([
-			'SECRET-PT-1: have the pilot read back the wrong runway.',
-			'SECRET-PT-2: pilot asks for progressive taxi halfway.'
-		]);
+		expect(scn.scenario.teacherPosition?.callsign).toBe('XMP_TWR');
 	});
 
 	it('are not sent to a teacher of another course', async () => {
@@ -72,10 +70,11 @@ describe('teacher notes', () => {
 		const scn = await scenario(otherTeacher);
 
 		expect(JSON.stringify([lp, scn])).not.toContain('SECRET');
+		expect(scn.scenario.teacherPosition).toBeNull();
 		// ...who does see their own course's.
-		expect(
-			(await lessonPlan(otherTeacher, undefined, 'lp-runway')).theoryItems[0].teacherNotes
-		).toBe('SECRET-ALC: ask about runway crossings.');
+		expect((await lessonPlan(otherTeacher, undefined, 'lp-runway')).tasks[0].teacherNotes).toBe(
+			'SECRET-ALC: ask about runway crossings.'
+		);
 	});
 
 	it('are shown on every course to the Training Admin and lead instructors, without asking training-tools', async () => {
@@ -85,9 +84,9 @@ describe('teacher notes', () => {
 			const alc = await lessonPlan(reader, training, 'lp-runway');
 			const scn = await scenario(reader, training);
 
-			expect(lp.theoryItems[0].teacherNotes).toContain('SECRET-TI-1');
-			expect(alc.theoryItems[0].teacherNotes).toContain('SECRET-ALC');
-			expect(scn.practicalTasks[0].teacherNotes).toContain('SECRET-PT-1');
+			expect(lp.tasks[1].teacherNotes).toContain('SECRET-LPT-1');
+			expect(alc.tasks[0].teacherNotes).toContain('SECRET-ALC');
+			expect(scn.scenario.teacherPosition?.callsign).toBe('XMP_TWR');
 			expect(training.asked).toEqual([]);
 		}
 	});

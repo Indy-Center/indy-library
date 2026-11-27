@@ -119,10 +119,25 @@ describe('/courses/[code]', () => {
 			expect((await sgc(lib)).version.number).toBe(2);
 		});
 
+		it('is read in the shape with lesson plan tasks and resources, and kept under shape 3', async () => {
+			const lib = library();
+			await sgc(lib);
+
+			expect(SHAPE_VERSION).toBe(3);
+			const kept = await lib.store.get(`${CURRENT}?shape=3`);
+			const [taxiBasics] = (kept?.body as typeof sgcCurrent).modules[0].lessonPlans;
+			expect(taxiBasics.tasks.map((t) => t.id)).toEqual(['lpt-heading', 'lpt-1', 'lpt-2']);
+			expect(taxiBasics.resources.map((r) => r.id)).toEqual([
+				'res-diagram',
+				'res-answers',
+				'res-card'
+			]);
+		});
+
 		describe('kept in an older shape', () => {
-			/** Copies of what the page reads, kept before the contract last changed shape. */
+			/** Copies of what the page reads, kept before the contract last changed shape (2). */
 			async function keepOldShape(lib: ReturnType<typeof library>) {
-				const old = (path: string) => copyKey(path, SHAPE_VERSION - 1);
+				const old = (path: string) => copyKey(path, 2);
 				await lib.store.put(old(CURRENT), {
 					fetchedAt: lib.clock.now,
 					body: { ...sgcCurrent, course: { ...sgcCurrent.course, title: 'Old shape' } }

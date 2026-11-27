@@ -38,33 +38,59 @@ export type GradePoint = { position: number; label: string; description: string 
 /** A task as a lesson plan or scenario points at it. `number` comes from the tree, e.g. "2.3.1". */
 export type TaskRef = { id: string; number: string; name: string };
 
-export type TheoryItem = { id: string; task: TaskRef; teacherNotes: string };
-
-export type PracticalTask = { id: string; task: TaskRef; teacherNotes: string; required: boolean };
-
 /**
- * One of the catalogue's positions as a scenario names it (decision 0060): its vNAS id, to look
- * it up in the catalogue's `positions`, and its callsign, for VATUSA's record. A position vNAS has
- * since dropped is still named, and is retired in the catalogue.
+ * One task a lesson plan covers, in the lesson plan's order. A task whose children are in the
+ * lesson plan may carry no statements, and then stands as a heading over them.
  */
-export type ScenarioPosition = {
-	/** The vNAS id, the catalogue position's `id`. */
+export type LessonPlanTask = {
 	id: string;
-	/** Such as `IND_83_CTR`. */
+	task: TaskRef;
+	required: boolean;
+	/** What the student knows and what they do; empty strings when unset. */
+	statements: { knowledge: string; skill: string };
+	teacherNotes: string;
+};
+
+/** A link a lesson plan offers (decisions 0067, 0074). */
+export type LessonPlanResource = {
+	id: string;
+	title: string;
+	url: string;
+	/** For teachers only, the whole resource. */
+	teacherOnly: boolean;
+	/** A note for teachers on this resource, on any resource. */
+	note: string;
+};
+
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
+/** Something that happens during a scenario, tagged with the difficulty it first appears at. */
+export type ScenarioEvent = {
+	id: string;
+	difficulty: Difficulty;
 	callsign: string;
+	aircraftType: string;
+	description: string;
 };
 
 export type Scenario = {
 	id: string;
 	name: string;
 	airport: string;
-	studentPosition: ScenarioPosition;
-	teacherPosition: ScenarioPosition;
-	difficulty: 'easy' | 'medium' | 'hard' | null;
-	mode: 'live' | 'sim';
+	/** vNAS position ids, looked up in the catalogue's `positions` (decision 0060). */
+	studentPosition: string;
+	teacherPosition: string;
+	description: string;
+	/** In the scenario's order. */
+	events: ScenarioEvent[];
+	/** The scenario's ATCTrainer id. */
+	atctrainer: string | null;
+	/** Retired scenarios are still served. */
 	retired: boolean;
-	practicalTasks: PracticalTask[];
 };
+
+/** A Lexical editor state as the CMS stores it. */
+export type LexicalBody = Record<string, unknown>;
 
 export type LessonPlan = {
 	id: string;
@@ -73,11 +99,14 @@ export type LessonPlan = {
 	description: string;
 	/** The rich-text body as HTML, written in the CMS. Images point at the public media store. */
 	bodyHtml: string;
+	/** The same body as Lexical JSON, or null. */
+	body: LexicalBody | null;
 	/** Minutes. */
 	time: number | null;
 	isExam: boolean;
 	minimum: GradePoint | null;
-	theoryItems: TheoryItem[];
+	tasks: LessonPlanTask[];
+	resources: LessonPlanResource[];
 	scenarios: Scenario[];
 };
 
@@ -159,12 +188,14 @@ export type Source = {
 /** A VATSIM controller rating that can bring a certification with it on arrival. */
 export type ArrivalRating = 'S1' | 'S2' | 'S3' | 'C1' | 'C3' | 'I1' | 'I3';
 
+export type CredentialKind = 'certification' | 'endorsement';
+
 /** A certification or endorsement Indy issues (decision 0054). */
 export type Credential = {
 	id: string;
 	/** Such as `S-GC` or `T2-CTR`. */
 	code: string;
-	kind: 'certification' | 'endorsement';
+	kind: CredentialKind;
 	name: string;
 	description: string;
 	/** A certification's place on the ladder, higher above lower; null for an endorsement. */
@@ -179,7 +210,7 @@ export type Credential = {
  * One of ZID's positions as the CMS copies it from vNAS Data Admin. It has every field of
  * Centerline's `PositionInfo`, so it goes to `setPositions` as it is.
  */
-export type CataloguePosition = {
+export type PublicPosition = {
 	/** vNAS's id, the same its live controller feed uses. */
 	id: string;
 	/** Such as `IND_83_CTR`. */
@@ -195,8 +226,11 @@ export type CataloguePosition = {
 	radioName: string;
 	/** In Hz: 128225000. */
 	frequency: number;
-	/** Such as `{ id: 'SDF', name: 'Louisville ATCT/TRACON' }`. */
-	facility: { id: string; name: string };
+	/**
+	 * Such as `{ id: 'SDF', name: 'Louisville ATCT/TRACON', parent: { id: 'ZID', name: 'Indy
+	 * Center' } }`; `parent` is null for a facility with none above it.
+	 */
+	facility: { id: string; name: string; parent: { id: string; name: string } | null };
 	/** One of its facility's main positions. */
 	starred: boolean;
 	/**
@@ -218,12 +252,16 @@ export type CatalogueTask = {
 	description: string;
 	parentId: string | null;
 	retired: boolean;
+	/** What a student knows, and what they do, for this task. */
+	knowledgeStatement: string;
+	skillStatement: string;
 	/**
 	 * Every competency the task is mapped to, its own and those inherited from tasks above it.
 	 * `fromTaskId` is the task the mapping is written on: this task's id, or an ancestor's.
 	 */
 	mappings: { competencyId: string; fromTaskId: string }[];
-	citations: { sourceId: string; place: string; title: string | null }[];
+	/** `url` is the citation's own link, null when it has none (its source's then serves). */
+	citations: { sourceId: string; place: string; title: string | null; url: string | null }[];
 };
 
 export type Catalogue = {
@@ -233,7 +271,7 @@ export type Catalogue = {
 	/** Certifications by rank, then endorsements by code, retired ones included. */
 	credentials: Credential[];
 	/** ZID's positions by callsign, retired ones included. */
-	positions: CataloguePosition[];
+	positions: PublicPosition[];
 	/** In tree order: each task follows its parent, siblings in their order. */
 	tasks: CatalogueTask[];
 };

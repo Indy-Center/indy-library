@@ -4,12 +4,14 @@ import { CmsUnavailableError } from '$lib/server/cms';
 import { isTrainingStaff } from '$lib/permissions';
 import type { ShownPosition } from '$lib/positions';
 import type {
-	CataloguePosition,
 	CourseSummary,
 	CourseVersionDocument,
 	LessonPlan,
+	LessonPlanResource,
+	LessonPlanTask,
+	PublicPosition,
 	Scenario,
-	ScenarioPosition,
+	ScenarioEvent,
 	TaskRef
 } from '$lib/server/cms/types';
 
@@ -104,9 +106,73 @@ export function teacherNotes(notes: string, shown: boolean): string | null {
 	return shown && notes.trim() ? notes : null;
 }
 
-/** Whether any of these items carries teacher notes, so there is something to decide. */
-export function hasTeacherNotes(items: { teacherNotes: string }[]): boolean {
-	return items.some((item) => item.teacherNotes.trim() !== '');
+/** A lesson plan as a page may be sent it: teacher-only material is null, or left out. */
+export type SentLessonPlan = Omit<LessonPlan, 'tasks' | 'resources' | 'scenarios'> & {
+	tasks: (Omit<LessonPlanTask, 'teacherNotes'> & { teacherNotes: string | null })[];
+	resources: (Omit<LessonPlanResource, 'note'> & { note: string | null })[];
+	scenarios: (Omit<Scenario, 'teacherPosition' | 'description' | 'events' | 'atctrainer'> & {
+		teacherPosition: string | null;
+		description: string | null;
+		events: ScenarioEvent[] | null;
+		atctrainer: string | null;
+	})[];
+};
+
+/**
+ * Whether the lesson plan holds any teacher-only material (decision 0076), so there is
+ * something to decide. Every teacher-only field is checked here; add new ones here too.
+ */
+function hasTeacherOnly(lessonPlan: LessonPlan): boolean {
+	const set = (text: string | null) => (text ?? '').trim() !== '';
+	return (
+		lessonPlan.tasks.some((task) => set(task.teacherNotes)) ||
+		lessonPlan.resources.some((resource) => resource.teacherOnly || set(resource.note)) ||
+		lessonPlan.scenarios.some(
+			(scenario) =>
+				set(scenario.teacherPosition) ||
+				set(scenario.description) ||
+				scenario.events.length > 0 ||
+				set(scenario.atctrainer)
+		)
+	);
+}
+
+/**
+ * A lesson plan as the page may send it to this reader, and whether it carries teacher-only
+ * material. Teacher-only material (decisions 0017, 0076) is a task's teacher notes, a
+ * teacher-only resource and every resource's note, and a scenario's teacher position,
+ * description, events and ATCTrainer id. A reader who may not see it gets no teacher-only
+ * resources and null for the rest, so it never reaches the browser. Lesson plans are only ever
+ * sent through this.
+ *
+ * training-tools is asked only when the lesson plan has some to decide on.
+ */
+export async function lessonPlanForReader(
+	locals: App.Locals,
+	courseCode: string,
+	lessonPlan: LessonPlan
+): Promise<{ lessonPlan: SentLessonPlan; showsTeacherOnly: boolean }> {
+	const shown = hasTeacherOnly(lessonPlan) && (await maySeeTeacherNotes(locals, courseCode));
+	return {
+		showsTeacherOnly: shown,
+		lessonPlan: {
+			...lessonPlan,
+			tasks: lessonPlan.tasks.map((task) => ({
+				...task,
+				teacherNotes: teacherNotes(task.teacherNotes, shown)
+			})),
+			resources: lessonPlan.resources
+				.filter((resource) => shown || !resource.teacherOnly)
+				.map((resource) => ({ ...resource, note: teacherNotes(resource.note, shown) })),
+			scenarios: lessonPlan.scenarios.map((scenario) => ({
+				...scenario,
+				teacherPosition: shown ? scenario.teacherPosition : null,
+				description: teacherNotes(scenario.description, shown),
+				events: shown ? scenario.events : null,
+				atctrainer: shown ? scenario.atctrainer : null
+			}))
+		}
+	};
 }
 
 /** What every course page says about the version it shows. */
@@ -143,20 +209,13 @@ export function findScenario(
 	return { scenario, offeredBy };
 }
 
-const DIFFICULTIES = { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as const;
-
-/** A scenario's difficulty as the page shows it: Easy, Medium, Hard, or nothing. */
-export function difficultyLabel(difficulty: Scenario['difficulty']): string {
-	return difficulty ? DIFFICULTIES[difficulty] : '';
-}
-
 /**
  * The catalogue's positions, for Centerline's `Position` to look scenario positions up in
  * (decision 0060). When the CMS cannot be read and no copy is kept, there are none, as
- * Centerline's positions lookup asks: every position then shows its callsign alone, and the
- * page still renders.
+ * Centerline's positions lookup asks: every position is then shown by its id, and the page
+ * still renders.
  */
-export async function cataloguePositions(locals: App.Locals): Promise<CataloguePosition[]> {
+export async function cataloguePositions(locals: App.Locals): Promise<PublicPosition[]> {
 	try {
 		return (await locals.cms.catalogue()).positions;
 	} catch (err) {
@@ -169,16 +228,18 @@ export async function cataloguePositions(locals: App.Locals): Promise<CatalogueP
 }
 
 /**
- * Makes the function that turns a scenario's position into what the page shows, marked retired
- * from the catalogue's positions.
+ * Makes the function that turns a scenario's position, a vNAS id, into what the page shows: the
+ * callsign and whether it is retired, from the catalogue's positions. An id the catalogue lacks
+ * (the two documents are kept apart, so it can happen) is shown by its id, not retired.
  */
 export async function makeShownPosition(
 	locals: App.Locals
-): Promise<(position: ScenarioPosition) => ShownPosition> {
-	const retired = new Set(
-		(await cataloguePositions(locals)).filter((p) => p.retired).map((p) => p.id)
-	);
-	return ({ id, callsign }) => ({ id, callsign, retired: retired.has(id) });
+): Promise<(positionId: string) => ShownPosition> {
+	const byId = new Map((await cataloguePositions(locals)).map((p) => [p.id, p]));
+	return (id) => {
+		const position = byId.get(id);
+		return { id, callsign: position?.callsign ?? id, retired: position?.retired ?? false };
+	};
 }
 
 /** A task as a link to its page shows it. */
