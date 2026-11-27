@@ -176,6 +176,31 @@ describe('/courses/[code]', () => {
 		await expect(sgc(lib)).rejects.toMatchObject({ status: 503 });
 	});
 
+	it("counts each lesson plan's tasks (a heading too) and scenarios", async () => {
+		const data = await sgc(library());
+
+		expect(
+			data.modules[0].lessonPlans.map((lp) => [lp.id, lp.taskCount, lp.scenarioCount])
+		).toEqual([
+			['lp-taxi', 3, 1],
+			['lp-review', 1, 0]
+		]);
+	});
+
+	it('sends no teacher-only material in the counts', async () => {
+		const data = await sgc(library());
+
+		expect(JSON.stringify(data)).not.toContain('SECRET');
+	});
+
+	it("counts the draft's lesson plans under ?version=draft, a retired scenario included", async () => {
+		const data = await sgcDraft(library());
+
+		expect(
+			data.modules[0].lessonPlans.map((lp) => [lp.id, lp.taskCount, lp.scenarioCount])
+		).toEqual([['lp-taxi', 3, 2]]);
+	});
+
 	describe('the draft', () => {
 		it("is shown to the course's authors, marked as a draft", async () => {
 			const data = await sgcDraft(library());

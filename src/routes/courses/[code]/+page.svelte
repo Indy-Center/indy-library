@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { duration } from '$lib/format';
+	import { count, duration, weeks as formatWeeks } from '$lib/format';
 	import DraftBanner from '$lib/components/DraftBanner.svelte';
 	import Retired from '$lib/components/Retired.svelte';
 	import RowLink from '$lib/components/RowLink.svelte';
@@ -99,12 +99,9 @@
 			</div>
 		{/if}
 		{#if data.facts.estimatedWeeks}
-			{@const weeks = data.facts.estimatedWeeks}
 			<div>
 				<dt>Estimated length</dt>
-				<dd>
-					{weeks.min === weeks.max ? `${weeks.min} weeks` : `${weeks.min}–${weeks.max} weeks`}
-				</dd>
+				<dd>{formatWeeks(data.facts.estimatedWeeks)}</dd>
 			</div>
 		{/if}
 		{#if data.facts.consolidation}
@@ -158,9 +155,12 @@
 								Exam
 							</Badge>
 						{/if}
-						{#if lp.time}
-							<span class="text-sm text-muted-foreground">{duration(lp.time)}</span>
-						{/if}
+						<span class="text-sm text-muted-foreground">
+							{count(lp.taskCount, 'task')}{#if lp.scenarioCount > 0}{' · '}{count(
+									lp.scenarioCount,
+									'scenario'
+								)}{/if}{#if lp.time}{' · '}{duration(lp.time)}{/if}
+						</span>
 					</RowLink>
 				</li>
 			{/each}

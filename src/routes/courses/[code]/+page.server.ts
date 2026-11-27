@@ -66,7 +66,11 @@ export const load = (async ({ locals, params, url }) => {
 				title: lp.title,
 				description: lp.description,
 				time: lp.time,
-				isExam: lp.isExam
+				isExam: lp.isExam,
+				// Headings count as tasks, and retired scenarios as scenarios: the counts match what
+				// the lesson plan page lists.
+				taskCount: lp.tasks.length,
+				scenarioCount: lp.scenarios.length
 			}))
 		}))
 	};
