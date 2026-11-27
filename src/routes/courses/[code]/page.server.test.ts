@@ -126,11 +126,20 @@ describe('/courses/[code]', () => {
 			expect(SHAPE_VERSION).toBe(3);
 			const kept = await lib.store.get(`${CURRENT}?shape=3`);
 			const [taxiBasics] = (kept?.body as typeof sgcCurrent).modules[0].lessonPlans;
-			expect(taxiBasics.tasks.map((t) => t.id)).toEqual(['lpt-heading', 'lpt-1', 'lpt-2']);
+			expect(taxiBasics.tasks.map((t) => t.id)).toEqual([
+				'lpt-heading',
+				'lpt-1',
+				'lpt-readback',
+				'lpt-cited',
+				'lpt-2',
+				'lpt-uncatalogued',
+				'lpt-coordination'
+			]);
 			expect(taxiBasics.resources.map((r) => r.id)).toEqual([
 				'res-diagram',
 				'res-answers',
-				'res-card'
+				'res-card',
+				'res-guide'
 			]);
 		});
 

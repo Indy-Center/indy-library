@@ -4,6 +4,7 @@ import { catalogue } from '$lib/testing/fixtures';
 import { fakeCms, library, run } from '$lib/testing/library';
 import { session } from '$lib/testing/readers';
 import { load } from './+layout.server';
+import { load as lessonPlanLoad } from './courses/[code]/lesson-plans/[id]/+page.server';
 import { load as scenarioLoad } from './courses/[code]/scenarios/[id]/+page.server';
 import { load as taskLoad } from './tasks/[id]/+page.server';
 
@@ -82,6 +83,21 @@ describe('root layout', () => {
 
 			// SvelteKit runs the layout's and the page's server loads side by side, with one `locals`.
 			await Promise.all([run(load, event), run(scenarioLoad, event)]);
+
+			expect(lib.cms.asked(CATALOGUE)).toBe(1);
+		});
+
+		it('reads it once with the lesson plan page, which reads it for citations and area names too', async () => {
+			const lib = library();
+			const params = { code: 'S-GC', id: 'lp-taxi' };
+			const event = layoutEvent(
+				session('1000002'),
+				lib,
+				'/courses/S-GC/lesson-plans/lp-taxi',
+				params
+			);
+
+			await Promise.all([run(load, event), run(lessonPlanLoad, event)]);
 
 			expect(lib.cms.asked(CATALOGUE)).toBe(1);
 		});
