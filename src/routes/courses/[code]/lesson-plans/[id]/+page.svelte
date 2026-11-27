@@ -275,7 +275,7 @@
 									<dd class="mt-1"><Airport airport={{ code: scenario.airport }} /></dd>
 								</div>
 								<div>
-									<dt class="label">{scenario.teacherPosition ? 'Student works' : 'You work'}</dt>
+									<dt class="label">{data.showsTeacherNotes ? 'Student works' : 'You work'}</dt>
 									<dd class="mt-1"><ScenarioPosition position={scenario.studentPosition} /></dd>
 								</div>
 								{#if scenario.teacherPosition}

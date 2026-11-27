@@ -295,15 +295,24 @@ describe('/courses/[code]/lesson-plans/[id]', () => {
 		});
 
 		it("are the draft's on a draft, which the page keeps in their links", async () => {
-			const lib = withTwoModules();
-			const href = '/courses/S-GC/lesson-plans/lp-taxi?version=draft';
+			// The draft holds three lesson plans; the page builds each link from `isDraft`.
+			const href = '/courses/S-GC/lesson-plans/lp-review?version=draft';
 			const data = await run(
 				load,
-				lib.event(session(AUTHOR_CID), href, { code: 'S-GC', id: 'lp-taxi' })
+				library().event(session(AUTHOR_CID), href, { code: 'S-GC', id: 'lp-review' })
 			);
 
 			expect(data.version.isDraft).toBe(true);
-			expect(data.next).toEqual({ id: 'lp-review', code: 'S-GC-2', title: 'Ground review' });
+			expect(data.previous).toEqual({
+				id: 'lp-taxi',
+				code: 'S-GC-1',
+				title: 'Taxi basics, rewritten'
+			});
+			expect(data.next).toEqual({
+				id: 'lp-draft-handoffs',
+				code: 'S-GC-3',
+				title: 'Handoffs between positions'
+			});
 		});
 	});
 

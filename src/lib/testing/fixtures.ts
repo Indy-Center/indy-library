@@ -128,7 +128,7 @@ const taxiBasics: LessonPlan = {
 			task: { id: 'task-readback', number: '1.1.1', name: 'Check the readback' },
 			required: true,
 			statements: { knowledge: '', skill: '' },
-			teacherNotes: ''
+			teacherNotes: 'SECRET-LPT-HEADING: have the student read it back twice.'
 		},
 		{
 			id: 'lpt-cited',
@@ -159,7 +159,7 @@ const taxiBasics: LessonPlan = {
 			task: { id: 'task-unmapped', number: '2', name: 'Coordination' },
 			required: true,
 			statements: { knowledge: 'Knows who to call before a crossing.', skill: '' },
-			teacherNotes: ''
+			teacherNotes: 'SECRET-LPT-TOP: ask who owns the runway crossing.'
 		}
 	],
 	resources: [
@@ -311,6 +311,19 @@ export const sgcDraft: CourseVersionDocument = {
 					...taxiBasics,
 					title: 'Taxi basics, rewritten',
 					scenarios: [quietAfternoon, retiredScenario]
+				},
+				// The draft holds three lesson plans, so the middle one has a previous and a next.
+				groundReview,
+				{
+					...groundReview,
+					id: 'lp-draft-handoffs',
+					code: 'S-GC-3',
+					title: 'Handoffs between positions',
+					description: 'Passing an aircraft to the next controller.',
+					bodyHtml: '<p>Made-up draft text about handoffs.</p>',
+					tasks: [],
+					resources: [],
+					scenarios: []
 				}
 			]
 		}

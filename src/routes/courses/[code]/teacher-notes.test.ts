@@ -137,9 +137,28 @@ describe('teacher notes', () => {
 			description: 'SECRET-EVT-1: asks for taxi without the ATIS.'
 		});
 		expect(taskNotes(lp).filter(([, note]) => note !== null)).toEqual([
-			['1.1', 'SECRET-LPT-1: ask what "hold short" means.']
+			['1.1', 'SECRET-LPT-1: ask what "hold short" means.'],
+			['1.1.1', 'SECRET-LPT-HEADING: have the student read it back twice.'],
+			['2', 'SECRET-LPT-TOP: ask who owns the runway crossing.']
 		]);
 		expect(scn.scenario.teacherPosition?.callsign).toBe('XMP_TWR');
+	});
+
+	it('on a heading row and a top-level row go to the course’s teacher, and not to a student', async () => {
+		const forTeacher = await lessonPlan(teacher);
+		const forStudent = await lessonPlan(student);
+
+		const heading = forTeacher.tasks.areas[0].rows[1];
+		expect(heading).toMatchObject({ kind: 'heading', number: '1.1.1' });
+		expect(heading.teacherNotes).toBe('SECRET-LPT-HEADING: have the student read it back twice.');
+		expect(forTeacher.tasks.areas[2].lead?.teacherNotes).toBe(
+			'SECRET-LPT-TOP: ask who owns the runway crossing.'
+		);
+
+		const sent = JSON.stringify(forStudent);
+		expect(sent).not.toContain('SECRET');
+		expect(sent).not.toContain('SECRET-LPT-HEADING');
+		expect(sent).not.toContain('SECRET-LPT-TOP');
 	});
 
 	it('are not sent to a teacher of another course', async () => {

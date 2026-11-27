@@ -190,7 +190,11 @@ describe('/courses/[code]', () => {
 			const data = await sgcDraft(library());
 
 			expect(data.version).toMatchObject({ number: 2, isDraft: true });
-			expect(data.modules[0].lessonPlans.map((lp) => lp.title)).toEqual(['Taxi basics, rewritten']);
+			expect(data.modules[0].lessonPlans.map((lp) => lp.title)).toEqual([
+				'Taxi basics, rewritten',
+				'Ground review',
+				'Handoffs between positions'
+			]);
 		});
 
 		it('is shown to the Training Admin and lead instructors', async () => {
