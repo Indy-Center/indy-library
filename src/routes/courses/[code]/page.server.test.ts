@@ -191,7 +191,7 @@ describe('/courses/[code]', () => {
 		expect(
 			data.modules[0].lessonPlans.map((lp) => [lp.id, lp.taskCount, lp.scenarioCount])
 		).toEqual([
-			['lp-taxi', 3, 1],
+			['lp-taxi', 7, 2],
 			['lp-review', 1, 0]
 		]);
 	});
@@ -207,7 +207,11 @@ describe('/courses/[code]', () => {
 
 		expect(
 			data.modules[0].lessonPlans.map((lp) => [lp.id, lp.taskCount, lp.scenarioCount])
-		).toEqual([['lp-taxi', 3, 2]]);
+		).toEqual([
+			['lp-taxi', 7, 2],
+			['lp-review', 1, 0],
+			['lp-draft-handoffs', 0, 0]
+		]);
 	});
 
 	describe('the draft', () => {
