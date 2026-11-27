@@ -39,6 +39,7 @@
 						{course.code}
 					</div>
 					<Heading level={2} look={3} class="mt-2">{course.title}</Heading>
+					<p class="mt-2 text-sm text-muted-foreground">{course.facts.join(' · ')}</p>
 					{#if course.draft !== null}
 						<Badge variant="yellow" pill size="sm" class="mt-3">
 							{course.hasCurrent ? `Draft edition ${course.draft} in progress` : 'Draft only'}
