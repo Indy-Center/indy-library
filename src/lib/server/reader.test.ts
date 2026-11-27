@@ -34,7 +34,7 @@ describe('lessonPlanForReader', () => {
 		const { lessonPlan, showsTeacherOnly } = await forReader(student);
 
 		expect(showsTeacherOnly).toBe(false);
-		expect(lessonPlan.tasks.map((t) => t.teacherNotes)).toEqual([null, null, null]);
+		expect(lessonPlan.tasks.every((t) => t.teacherNotes === null)).toBe(true);
 		expect(lessonPlan.tasks[1].statements).toEqual({
 			knowledge: 'Knows the parts of a taxi clearance.',
 			skill: 'Issues a taxi clearance with a route and a hold short.'
@@ -66,6 +66,17 @@ describe('lessonPlanForReader', () => {
 				events: null,
 				atctrainer: null,
 				retired: false
+			},
+			{
+				id: 'scn-evening',
+				name: 'An evening push at Example Field',
+				airport: 'KXMP',
+				studentPosition: 'pos-xmp-gnd',
+				teacherPosition: null,
+				description: null,
+				events: null,
+				atctrainer: null,
+				retired: false
 			}
 		]);
 		expect(JSON.stringify(lessonPlan)).not.toContain('SECRET');
@@ -79,13 +90,14 @@ describe('lessonPlanForReader', () => {
 		expect(lessonPlan.resources.map((r) => [r.id, r.note])).toEqual([
 			['res-diagram', 'SECRET-RES-NOTE: point out taxiway B first.'],
 			['res-answers', null],
-			['res-card', null]
+			['res-card', null],
+			['res-guide', 'SECRET-RES-ONLY-NOTE: use the second half only.']
 		]);
 		const [scenario] = lessonPlan.scenarios;
 		expect(scenario.teacherPosition).toBe('pos-xmp-twr');
 		expect(scenario.description).toContain('SECRET-SCN-1');
-		expect(scenario.events?.map((e) => e.id)).toEqual(['evt-1', 'evt-2']);
-		expect(scenario.atctrainer).toBe('SECRET-ATCTRAINER-QUIET');
+		expect(scenario.events?.map((e) => e.id)).toEqual(['evt-1', 'evt-2', 'evt-3']);
+		expect(scenario.atctrainer).toBe('https://example.com/atctrainer/SECRET-ATCTRAINER-QUIET');
 	});
 
 	it('gives a teacher of another course none of it', async () => {
@@ -103,7 +115,7 @@ describe('lessonPlanForReader', () => {
 
 			expect(lessonPlan.tasks[1].teacherNotes).toContain('SECRET-LPT-1');
 			expect(lessonPlan.resources.map((r) => r.id)).toContain('res-answers');
-			expect(lessonPlan.scenarios[0].atctrainer).toBe('SECRET-ATCTRAINER-QUIET');
+			expect(lessonPlan.scenarios[0].atctrainer).toContain('SECRET-ATCTRAINER-QUIET');
 			expect(training.asked).toEqual([]);
 		}
 	});

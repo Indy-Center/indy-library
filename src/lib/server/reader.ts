@@ -4,6 +4,7 @@ import { CmsUnavailableError } from '$lib/server/cms';
 import { isTrainingStaff } from '$lib/permissions';
 import type { ShownPosition } from '$lib/positions';
 import type {
+	Catalogue,
 	CourseSummary,
 	CourseVersionDocument,
 	LessonPlan,
@@ -216,12 +217,28 @@ export function findScenario(
  * still renders.
  */
 export async function cataloguePositions(locals: App.Locals): Promise<PublicPosition[]> {
+	return (await catalogueOrEmpty(locals)).positions;
+}
+
+/**
+ * The catalogue, for a page that can do without it: when the CMS cannot be read and no copy is
+ * kept, an empty one, so the page still renders (positions by their ids, no citations, areas by
+ * their numbers). The same read as the layout's positions: the CMS client reads it once a request.
+ */
+export async function catalogueOrEmpty(locals: App.Locals): Promise<Catalogue> {
 	try {
-		return (await locals.cms.catalogue()).positions;
+		return await locals.cms.catalogue();
 	} catch (err) {
 		if (err instanceof CmsUnavailableError) {
-			console.error('[indy-library] no positions:', err);
-			return [];
+			console.error('[indy-library] no catalogue:', err);
+			return {
+				frameworks: [],
+				competencies: [],
+				sources: [],
+				credentials: [],
+				positions: [],
+				tasks: []
+			};
 		}
 		throw err;
 	}
